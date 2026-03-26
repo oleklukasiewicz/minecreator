@@ -1,0 +1,6 @@
+@minecreator_HostAddress = http://localhost:5212
+
+GET {{minecreator_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
