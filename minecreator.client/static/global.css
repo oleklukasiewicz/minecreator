@@ -72,7 +72,7 @@
   --color-warning: #ffa63948;
   --color-info: #3b6dd8;
   --color-error: #b84343;
-  --color-navigation:rgba(226, 226, 226, 0.8);
+  --color-navigation: rgba(226, 226, 226, 0.8);
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -96,9 +96,10 @@
   }
 }
 body {
-  font-family: "Noto Sans", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
+  font-family:
+    "Noto Sans", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
   margin: 0;
-  background-color: var(--color-theme);
+  background-color: var(--color-theme-D1);
   overflow-y: scroll;
   color: var(--color-theme-font);
 }
@@ -106,4 +107,15 @@ body {
   user-select: none;
   pointer-events: none;
   opacity: 0.5;
+}
+.separator.vertical {
+  width: 1px;
+  border-left: solid 2px var(--color-theme-D2);
+  margin: 10px 4px;
+}
+.separator.horizontal {
+  height: 1px;
+  border-bottom: solid 2px var(--color-theme-D2);
+  margin: 0px 0px;
+  max-width: 100%;
 }

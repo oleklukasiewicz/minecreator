@@ -132,7 +132,7 @@
   class:closed={!opened}
   class:mobile={$IS_MOBILE_VIEW}
 >
-  <Resize targetNode={caller} onresize={onResize} debounce={100}></Resize>
+  <Resize targetNode={caller} onresize={onResize} debounce={1}></Resize>
   <Resize targetNode={componentContent} onresize={onComponentResize}></Resize>
   <div bind:this={componentContent} class="flyout-content">
     {@render children?.({ position: actualPosition })}
@@ -165,7 +165,7 @@
       justify-content: center;
       box-sizing: border-box;
       align-items: flex-end;
-      height: 100vh;
+      height: 100%;
       .flyout-content {
         position: relative;
         width: 100%;
