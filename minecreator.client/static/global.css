@@ -1,0 +1,109 @@
+@font-face {
+  font-family: minecraft;
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  ascent-override: 100%;
+  src: url(/font/minecraftBolder.woff) format("truetype");
+}
+@font-face {
+  font-family: minecraft-simple;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/font/minecraftSimple.woff2) format("truetype");
+  -webkit-font-smoothing: antialiased; /* For WebKit-based browsers */
+  -moz-osx-font-smoothing: grayscale; /* For macOS */
+  text-rendering: optimizeLegibility; /* Optimize for legibility */
+  font-smoothing: antialiased; /* Standard property */
+}
+@font-face {
+  font-family: minecraft-micro;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/font/minecraft-micro.ttf) format("truetype");
+}
+:root {
+  --shadow-button: inset -2px -2px #0006, inset 2px 2px #fff7;
+  --color-theme-font: #333333;
+  --color-accent: #3b8526;
+  --color-accent-L2: #8be468;
+  --color-accent-L1: #6bc349;
+  --color-accent-D1: #2a631c;
+  --color-accent-D2: #214717;
+  --color-unique: #e79836;
+  --color-unique-A1: #ec620e;
+  --color-rare: #1de495;
+  --color-rare-A1: #0ebd77;
+  --color-legend: #ca31e9;
+  --color-legend-A1: rgb(146, 8, 146);
+  --color-ancient: #f8604c;
+  --color-ancient-A1: #be4b3b;
+  --color-common: #c6c6c6;
+  --color-common-A1: #888;
+  --color-accent-font: #fff;
+  --color-active: #2a2a2a;
+  --color-active-L1: #2f2f2f;
+  --color-active-D1: #000;
+  --color-hover: #3d3938;
+  --color-hover-L1: #8d8e92;
+  --color-hover-D1: #171615;
+  --time: 0.3s;
+  --time-A1: 0.6s;
+  --color-theme-L1: #fcfcfc;
+  --color-theme: #f2f2f2;
+  --color-theme-D1: #e2e2e2;
+  --color-theme-D2: #c2c2c2;
+  --color-theme-D3: #a2a2a2;
+  --color-theme-D4: #828282;
+  --color-theme-D5: #626262;
+  --color-theme-D6: #424242;
+  --color-theme-D7: #282828;
+  --size-font-icon: 13px;
+  --size-font-subcaption: 10px;
+  --size-font-caption: 14px;
+  --size-font-base: 16px;
+  --size-font-subtitle: 20px;
+  --size-font-title: 24px;
+  --size-font-subheader: 34px;
+  --size-font-header: 46px;
+  --color-dialog: rgba(0, 0, 0, 0.6);
+  --color-warning: #ffa63948;
+  --color-info: #3b6dd8;
+  --color-error: #b84343;
+  --color-navigation:rgba(226, 226, 226, 0.8);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-theme-font: #ddd;
+    --color-active: #4a494b;
+    --color-active-L1: #8d8e92;
+    --color-active-D1: #000;
+    --color-hover: #3d3938;
+    --color-hover-L1: #8d8e92;
+    --color-hover-D1: #171615;
+    --color-theme-L1: #2b2b2b;
+    --color-theme: #1e1e1e;
+    --color-theme-D1: #161616;
+    --color-theme-D2: #2e2e2e;
+    --color-theme-D3: #424242;
+    --color-theme-D4: #5c5c5c;
+    --color-theme-D5: #7a7a7a;
+    --color-theme-D6: #9a9a9a;
+    --color-theme-D7: #b8b8b8;
+    --color-navigation: rgba(30, 30, 30, 0.8);
+  }
+}
+body {
+  font-family: "Noto Sans", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
+  margin: 0;
+  background-color: var(--color-theme);
+  overflow-y: scroll;
+  color: var(--color-theme-font);
+}
+.disabled {
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.5;
+}

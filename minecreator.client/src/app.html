@@ -1,11 +1,44 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/global.css"
+      as="style"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="%sveltekit.assets%/global.css"
+      media="screen"
+    />
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/font/minecraft-micro.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/font/minecraftSimple.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/font/minecraftBolder.woff"
+      as="font"
+      type="font/woff"
+      crossorigin
+    />
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
 </html>

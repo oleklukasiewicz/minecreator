@@ -1,0 +1,125 @@
+.button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  box-sizing: border-box;
+  user-select: none;
+  cursor: pointer;
+  &.text-center {
+    justify-content: center;
+  }
+  &.text-left {
+    justify-content: flex-start;
+  }
+  &.text-right {
+    justify-content: flex-end;
+  }
+  &.no-border {
+    border: none !important;
+  }
+  &.only-icon {
+    aspect-ratio: 1;
+    padding: 0px !important;
+  }
+  &.large {
+    height: 46px;
+    padding: 0px 12px;
+    font-size: var(--size-font-subtitle);
+  }
+  &.medium {
+    height: 36px;
+    padding: 0px 8px;
+  }
+  &.small {
+    height: 32px;
+    padding: 0px 6px;
+  }
+  &.flat {
+    box-shadow: none !important;
+  }
+  &.with-label {
+    flex: 1;
+  }
+  & > span {
+    display: inline-block;
+    vertical-align: top;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  & > .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  &.white-text {
+    color: var(--color-accent-font) !important;
+  }
+  &.focused {
+    color: var(--color-accent-font) !important;
+    background-color: var(--color-hover) !important;
+    font-family: minecraft-simple !important;
+  }
+  &.primary {
+    background-color: var(--color-accent);
+    color: var(--color-accent-font);
+    font-family: minecraft;
+    border: 2px solid var(--color-active-D1);
+    box-shadow: var(--shadow-button);
+    &:hover {
+      color: var(--color-accent-font);
+      background-color: var(--color-hover);
+    }
+    &:active {
+      color: var(--color-accent-font);
+      background-color: var(--color-active);
+    }
+  }
+  &.secondary {
+    background-color: var(--color-theme-D2);
+    color: var(--color-theme-font);
+    font-family: minecraft-simple;
+    border: 2px solid var(--color-active-D1);
+    box-shadow: var(--shadow-button);
+    &:hover {
+      color: var(--color-accent-font);
+      background-color: var(--color-hover);
+    }
+    &:active {
+      color: var(--color-accent-font);
+      background-color: var(--color-active);
+    }
+  }
+  &.tertiary {
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+    color: var(--color-accent);
+    font-family: minecraft-simple;
+    &:hover {
+      color: var(--color-accent-font);
+      background-color: var(--color-hover);
+    }
+    &:active {
+      color: var(--color-accent-font);
+      background-color: var(--color-active);
+    }
+  }
+  &.quaternary {
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+    color: var(--color-theme-font);
+    font-family: minecraft-simple;
+    &:hover {
+      color: var(--color-accent-font);
+      background-color: var(--color-hover);
+    }
+    &:active {
+      color: var(--color-accent-font);
+      background-color: var(--color-active);
+    }
+  }
+}

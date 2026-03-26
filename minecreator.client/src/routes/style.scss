@@ -1,0 +1,38 @@
+#container {
+  margin: 0 auto;
+  padding: 12px;
+  box-sizing: border-box;
+  display: table;
+  min-width: 75%;
+  text-align: center;
+  h1 {
+    margin-top: 33vh;
+    font-family: minecraft;
+    font-size: var(--size-font-header);
+  }
+  #toolbox {
+    display: grid;
+    grid-template-columns: 300px 300px 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+    .option-select {
+        width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+  }
+  #toolbox .label {
+    font-family: minecraft;
+    font-size: var(--size-font-caption);
+  }
+  &.mobile {
+    #toolbox {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+  }
+}
