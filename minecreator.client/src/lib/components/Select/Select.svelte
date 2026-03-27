@@ -72,7 +72,9 @@
 
       if (isMultiple) {
         if (!Array.isArray(selectedItemValue)) return false;
-        return selectedItemValue.some((selected: any) => isSameItem(selected, item));
+        return selectedItemValue.some((selected: any) =>
+          isSameItem(selected, item),
+        );
       }
       return isSameItem(selectedItemValue, item);
     },
@@ -111,7 +113,9 @@
           ? []
           : [selectedItemValue];
 
-      if (currentSelection.some((selected: any) => isSameItem(selected, item))) {
+      if (
+        currentSelection.some((selected: any) => isSameItem(selected, item))
+      ) {
         selectedItemValue = currentSelection.filter(
           (selected: any) => !isSameItem(selected, item),
         );
@@ -124,9 +128,9 @@
 
     if (itemValue) {
       if (multiple)
-        selectedItem = selectedItemValue.map(
-          (i: { [x: string]: any }) => i[itemValue],
-        );
+        selectedItem = selectedItemValue
+          .map((i: { [x: string]: any }) => i[itemValue])
+          .filter((v: any) => v != null);
       else selectedItem = selectedItemValue[itemValue];
     } else selectedItem = selectedItemValue;
     if (!multiple) opened = false;
