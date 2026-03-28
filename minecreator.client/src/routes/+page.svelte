@@ -1,17 +1,17 @@
 <script lang="ts">
+  import { ExportConfig } from "$src/data/export";
   import { IS_MOBILE_VIEW } from "$data/global";
-  import Button from "$lib/components/Button/Button.svelte";
+  import { ImportConfig, ImportConfigFromFile } from "$src/data/import";
+  import { GAME_VERSION, Outfit, SKIN_MODEL } from "$data/outfit";
+  import Button from "$lib/components/base/Button/Button.svelte";
+  import SectionTitle from "$lib/components/base/SectionTitle/SectionTitle.svelte";
+  import Select from "$lib/components/base/Select/Select.svelte";
+  import OutfitPreview from "$lib/components/layout/OutfitPreview/OutfitPreview.svelte";
+  import ClothListItem from "$lib/components/OutfitListItem/OutfitListItem.svelte";
+  import DragAndDrop from "$lib/components/other/DragAndDrop/DragAndDrop.svelte";
+  import ImportIcon from "$icons/download.svg?raw";
   import AddIcon from "$icons/plus.svg?raw";
   import ExportIcon from "$icons/upload.svg?raw";
-  import ImportIcon from "$icons/download.svg?raw";
-  import Select from "$lib/components/Select/Select.svelte";
-  import ClothListItem from "$lib/components/OutfitListItem/OutfitListItem.svelte";
-  import { GAME_VERSION, Outfit, SKIN_MODEL } from "$data/outfit";
-  import { ExportConfig } from "$src/data/export";
-  import { ImportConfig, ImportConfigFromFile } from "$src/data/import";
-  import DragAndDrop from "$lib/components/other/DragAndDrop/DragAndDrop.svelte";
-  import OutfitPreview from "$lib/components/layout/OutfitPreview/OutfitPreview.svelte";
-  import SectionTitle from "$lib/components/SectionTitle/SectionTitle.svelte";
 
   let selectedVersion = $state<string | null>("modern");
   let selectedSkinModel = $state<string[] | null>(["classic"]);
@@ -55,6 +55,7 @@
     if (file) {
       const data = await ImportConfigFromFile(file);
       outfitList = [...data, ...outfitList];
+      selectedOutfit = outfitList[0];
     }
   };
   const RemoveOutfit = function (outfit: Outfit) {
@@ -124,7 +125,7 @@
         />
         <div class="separator vertical"></div>
         <Button
-          label="new item"
+          label="new outfit"
           icon={AddIcon}
           onclick={addDefaultOutfit}
           disabled={selectedVersion === null}
@@ -132,9 +133,7 @@
       </div>
       <div class="separator horizontal"></div>
       {#if outfitList.length === 0}
-        <span id="no-outfits"
-          >No outfits</span
-        >
+        <span id="no-outfits">No outfits</span>
       {:else}
         <div id="items-content">
           <div id="items-list">

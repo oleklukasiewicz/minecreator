@@ -1,18 +1,13 @@
 <script lang="ts">
-  //main imports
-  //services
-  import { clickOutside } from "$src/helpers/componentHelper";
-  //components
-  import Button from "../Button/Button.svelte";
-  //consts
   import { IS_MOBILE_VIEW } from "$src/data/global";
-  //icons
+  import { clickOutside } from "$src/helpers/componentHelper";
+  import Button from "../Button/Button.svelte";
+  import Flyout from "../Flyout/Flyout.svelte";
+  import CheckBoxOffIcon from "$icons/checkbox-off.svg?raw";
+  import CheckBoxIcon from "$icons/checkbox.svg?raw";
   import ChevronUpIcon from "$icons/chevron-up.svg?raw";
   import ChevronDownIcon from "$icons/chevron-down.svg?raw";
   import CloseIcon from "$icons/close.svg?raw";
-  import CheckBoxIcon from "$icons/checkbox.svg?raw";
-  import CheckBoxOffIcon from "$icons/checkbox-off.svg?raw";
-  import Flyout from "../Flyout/Flyout.svelte";
 
   interface Props {
     items?: any[];

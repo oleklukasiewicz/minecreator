@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Outfit } from "$src/data/outfit";
-  import Button from "../Button/Button.svelte";
+  import Button from "../base/Button/Button.svelte";
   import CancelIcon from "$icons/close.svg?raw";
   //main imports
 

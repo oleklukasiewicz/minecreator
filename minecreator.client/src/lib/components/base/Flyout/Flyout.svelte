@@ -1,11 +1,8 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import Resize from "$lib/components/other/Resize/Resize.svelte";
   import { IS_MOBILE_VIEW } from "$data/global";
-
-  //services
   import { clickOutside } from "$src/helpers/componentHelper";
-  import { on } from "svelte/events";
+  import Resize from "$lib/components/other/Resize/Resize.svelte";
   
   let {
     opened = $bindable(false),
@@ -32,21 +29,25 @@
   let component: HTMLDivElement | null = null;
   let componentContent = $state<HTMLDivElement | null>(null);
 
-  const onClose = () => {
+  const onClose = (event?: MouseEvent) => {
+    if (caller && event?.target && caller.contains(event.target as Node)) {
+      return;
+    }
     if (opened && !preventClickOutsideClose) opened = false;
   };
   const onStateChanged = (v: any) => {
-    let parentNode = document.body;
-    if (!component || !parentNode) return;
-    if (caller) {
-      parentNode = caller;
-    }
+    if (!component) return;
     onResize();
+    if (v) {
+      requestAnimationFrame(() => {
+        calculatePosition();
+      });
+    }
   };
   const calculatePosition = () => {
-    if(!component) return;
+    if (!component || !caller) return;
     const flyoutRect = component.getBoundingClientRect();
-    const callerRect = caller?.getBoundingClientRect();
+    const callerRect = caller.getBoundingClientRect();
     if (autoWidth && !$IS_MOBILE_VIEW)
       component.style.minWidth = callerRect?.width + "px";
     else component.style.minWidth = "";
@@ -99,7 +100,7 @@
   };
   const onResize = () => {
     if (!resizable) return;
-    if(!component) return;
+    if (!component || !caller) return;
     const callerRect = caller?.getBoundingClientRect();
     if (autoWidth && !$IS_MOBILE_VIEW) {
       component.style.minWidth = callerRect?.width + "px";
@@ -170,7 +171,7 @@
         position: relative;
         width: 100%;
         max-width: 100%;
-        max-height: 75vh;
+        max-height: 90vh;
         overflow: auto;
       }
       &.opened .flyout-mobile-bg {
