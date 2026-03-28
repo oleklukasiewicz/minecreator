@@ -1,23 +1,12 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
+  import { _ } from "svelte-i18n";
   import Button from "../Button/Button.svelte";
   import TextBox from "../TextBox/TextBox.svelte";
 
   let { selectedColor = $bindable(""), onselect = null } = $props();
 
   const DEFAULT_COLOR = "#C6C6C6";
-  const SWATCHES = [
-    "#C6C6C6",
-    "#FFFFFF",
-    "#000000",
-    "#E79836",
-    "#F8604C",
-    "#CA31E9",
-    "#3B8526",
-    "#1DE495",
-    "#3B6DD8",
-    "#8B5A2B",
-  ];
 
   let hue = $state(0);
   let saturation = $state(0);
@@ -157,6 +146,24 @@
     return rgbToHex(rgb.r, rgb.g, rgb.b);
   };
 
+  const generateSwatchesFromColor = (hex: string) => {
+    const normalized = normalizeHex(hex) ?? DEFAULT_COLOR;
+    const rgb = hexToRgb(normalized);
+    if (!rgb) return [DEFAULT_COLOR];
+
+    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const baseHue = hsl.h;
+    const baseSaturation = hsl.s;
+    const baseLightness = hsl.l;
+
+    const offsets = [-45, -35, -25, -15, -5, 0, 10, 20, 30, 40];
+    const uniqueLightness = Array.from(
+      new Set(offsets.map((offset) => clamp(baseLightness + offset, 2, 98))),
+    );
+
+    return uniqueLightness.map((l) => hslToHex(baseHue, baseSaturation, l));
+  };
+
   const syncFromHsl = () => {
     const currentHex = hslToHex(hue, saturation, lightness);
     selectedColor = currentHex;
@@ -239,6 +246,7 @@
 
   const isHexValid = $derived(normalizeHex(hexInput) !== null);
   const previewColor = $derived(hslToHex(hue, saturation, lightness));
+  const generatedSwatches = $derived(generateSwatchesFromColor(previewColor));
   const selectionMarkerStyle = $derived(
     `left:${clamp(saturation, 0, 100)}%;top:${clamp(100 - lightness, 0, 100)}%;`,
   );
@@ -271,14 +279,14 @@
     />
   </div>
   <div id="swatches">
-    {#each SWATCHES as swatch}
+    {#each generatedSwatches as swatch}
       <button
         type="button"
         class="swatch"
         class:selected={swatch === selectedColor}
         style={`background:${swatch};`}
         onclick={() => applySwatchColor(swatch)}
-        aria-label={`Select ${swatch}`}
+        aria-label={$_("colorPicker.selectSwatchAria", { values: { hex: swatch } })}
       ></button>
     {/each}
   </div>
@@ -289,15 +297,15 @@
 
     <div id="controls-area">
       <TextBox
-        placeholder="Hex color"
+        placeholder={$_("colorPicker.hexPlaceholder")}
         oninput={handleInput}
         bind:value={hexInput}
       />
       {#if !isHexValid}
-        <span id="input-error">Invalid color (#RGB or #RRGGBB).</span>
+        <span id="input-error">{$_("colorPicker.invalidHex")}</span>
       {/if}
       <Button
-        label="Select"
+        label={$_("colorPicker.select")}
         size="medium"
         disabled={!isHexValid}
         onclick={emitSelectedColor}

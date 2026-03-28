@@ -15,6 +15,7 @@
   import CancelIcon from "$icons/close.svg?raw";
   import AddIcon from "$icons/plus.svg?raw";
   import { IS_MOBILE_VIEW } from "$src/data/global";
+  import { _ } from "svelte-i18n";
 
   let {
     outfit = null,
@@ -27,6 +28,28 @@
   let colorPickerCaller = $state<HTMLElement | null>(null);
   let colorPickerOpened = $state(false);
   let colorPickerSelected = $state("#C6C6C6");
+
+  const translatedOutfitTypes = $derived(
+    OUTFIT_TYPE_DATA.map(
+      (item) => new ValueData(item.value, $_(`options.outfitType.${item.value}`)),
+    ),
+  );
+  const translatedOutfitStyles = $derived(
+    OUTFIT_STYLE_DATA.map(
+      (item) =>
+        new ValueData(item.value, $_(`options.outfitStyle.${item.value}`)),
+    ),
+  );
+  const translatedAccessories = $derived(
+    OUTFIT_ACCESSORY_DATA.map(
+      (item) =>
+        new ValueData(item.value, $_(`options.outfitAccessory.${item.value}`)),
+    ),
+  );
+  const sampleOptions = Array.from({ length: 5 }, (_, index) => ({
+    label: String(index + 1),
+    value: index + 1,
+  }));
 
   const normalizeHex = (value: string) => {
     const normalized = value.trim().toUpperCase();
@@ -75,65 +98,48 @@
 <div id="outfit-preview" class:mobile={$IS_MOBILE_VIEW}>
   {#if outfit}
     <div class="category">
-      <SectionTitle label="Name" />
+      <SectionTitle label={$_("outfitPreview.name")} />
       <TextBox
         value={outfit.name}
-        placeholder="Outfit Name"
+        placeholder={$_("outfitPreview.namePlaceholder")}
         clearable
         oninput={(value: string) =>
           onUpdate?.({ ...outfit, name: value } as Outfit)}
       />
       <div class="section">
         <div class="sub-section">
-          <SectionTitle label="Type" />
+          <SectionTitle label={$_("outfitPreview.type")} />
           <Select
-            items={OUTFIT_TYPE_DATA}
-            bind:selectedItem={outfit.type}
+            items={translatedOutfitTypes}
+            selectedItem={outfit.type}
             itemText="label"
             itemValue="value"
-            placeholder="Select outfit type"
+            placeholder={$_("outfitPreview.typePlaceholder")}
             onselect={(payload: { item: ValueData }) =>
               onUpdate?.({ ...outfit, type: payload.item.value } as Outfit)}
           />
         </div>
         <div class="sub-section">
-          <SectionTitle label="Style" />
+          <SectionTitle label={$_("outfitPreview.style")} />
           <Select
-            items={OUTFIT_STYLE_DATA}
-            bind:selectedItem={outfit.style}
+            items={translatedOutfitStyles}
+            selectedItem={outfit.style}
             itemText="label"
             itemValue="value"
-            placeholder="Select outfit style"
+            placeholder={$_("outfitPreview.stylePlaceholder")}
             onselect={(payload: { item: ValueData }) =>
               onUpdate?.({ ...outfit, style: payload.item.value } as Outfit)}
           />
         </div>
       </div>
-    </div>
-    <div class="category">
-      <SectionTitle label="Accessory" />
-      <Select
-        items={OUTFIT_ACCESSORY_DATA}
-        bind:selectedItem={outfit.accessories}
-        itemText="label"
-        multiple
-        itemValue="value"
-        placeholder="Select outfit accessory"
-        onselect={(payload: { item: ValueData[] }) =>
-          onUpdate?.({
-            ...outfit,
-            accessories: [...payload.item.map((i) => i.value)],
-          } as Outfit)}
-      />
-    </div>
-    <div class="category">
-      <SectionTitle label="Colors" />
+      <SectionTitle label={$_("outfitPreview.colors")} />
 
       <div class="color-section">
         <div bind:this={colorPickerCaller} class="color-picker-caller">
           <Button
+            disabled={outfit?.colors.length > 4}
             icon={AddIcon}
-            label="Add Color"
+            label={$_("outfitPreview.addColor")}
             size="medium"
             onclick={() => (colorPickerOpened = !colorPickerOpened)}
           />
@@ -152,18 +158,16 @@
           >
         </div>
         <div class="colors">
-          {#if outfit?.colors.length === 0}
-            <span class="empty-colors">No colors added yet.</span>
-          {:else}
+          {#if outfit?.colors.length > 0}
             <div class="separator vertical"></div>
             {#each outfit?.colors as color}
               <!-- svelte-ignore a11y_missing_attribute -->
-              <a class="color">
+              <a class="color" title={color}>
                 <span style={`background:${color};`}></span>
                 <Button
                   onclick={() => removeColorFromOutfit(color)}
                   icon={CancelIcon}
-                  label="Remove"
+                  label={$_("common.remove")}
                   size="medium"
                   type="quaternary"
                   onlyIcon
@@ -173,42 +177,74 @@
           {/if}
         </div>
       </div>
+      {#if outfit?.colors.length > 4}
+        <span class="preview-note">{$_("outfitPreview.maxColors")}</span>
+      {/if}
+      {#if outfit?.colors.length === 0}
+        <span class="preview-note">{$_("outfitPreview.noColors")}</span>
+      {/if}
     </div>
     <div class="category">
-      <SectionTitle label="Seed" />
-      <TextBox
-        value={outfit.seed}
-        placeholder="Outfit Seed"
-        clearable
-        oninput={(value: string) =>
-          onUpdate?.({ ...outfit, seed: value } as Outfit)}
-      />
-      <SectionTitle label="Samples" />
-      <TextBox
-        value={outfit.samples?.toString() ?? ""}
-        placeholder="Number of samples to generate"
-        clearable
-        oninput={(value: string) =>
+      <SectionTitle label={$_("outfitPreview.accessory")} />
+      <Select
+        items={translatedAccessories}
+        selectedItem={outfit.accessories}
+        itemText="label"
+        multiple
+        itemValue="value"
+        placeholder={$_("outfitPreview.accessoryPlaceholder")}
+        onselect={(payload: { item: ValueData[] }) =>
           onUpdate?.({
             ...outfit,
-            samples: parseInt(value) || undefined,
+            accessories: [...payload.item.map((i) => i.value)],
           } as Outfit)}
       />
     </div>
+    <div class="category">
+      <div class="section">
+        <div class="sub-section">
+          <SectionTitle label={$_("outfitPreview.seed")} />
+          <TextBox
+            value={outfit.seed}
+            placeholder={$_("outfitPreview.seedPlaceholder")}
+            clearable
+            maxLength={32}
+            oninput={(value: string) =>
+              onUpdate?.({ ...outfit, seed: value } as Outfit)}
+          />
+        </div>
+        <div class="sub-section">
+          <SectionTitle label={$_("outfitPreview.samples")} />
+          <Select
+            items={sampleOptions}
+            selectedItem={outfit.samples}
+            itemText="label"
+            itemValue="value"
+            placeholder={$_("outfitPreview.samplesPlaceholder")}
+            onselect={(payload: { item: { label: string; value: number } }) =>
+              onUpdate?.({
+                ...outfit,
+                samples: payload.item.value,
+              } as Outfit)}
+          />
+        </div>
+      </div>
+    </div>
   {:else}
-    <span id="no-outfit">No outfit selected</span>
+    <span class="preview-note">{$_("outfitPreview.noOutfitSelected")}</span>
   {/if}
 </div>
 
 <style lang="scss">
   #outfit-preview {
     display: flex;
+    width: 100%;
     gap: 8px;
     flex-direction: column;
     text-align: left;
-    #no-outfit {
+    .preview-note {
       color: var(--color-theme-D5);
-      font-family: minecraft;
+      font-family: minecraft-simple;
       font-size: var(--size-font-caption);
     }
     .section {
@@ -222,7 +258,7 @@
       display: flex;
       gap: 8px;
       flex-direction: column;
-      margin: 16px 0;
+      margin: 12px 0;
     }
     .sub-section {
       display: flex;
@@ -238,7 +274,7 @@
       background-color: var(--color-theme);
       border: 2px solid var(--color-theme-D1);
       box-sizing: border-box;
-      width: min(320px, calc(100vw - 32px));
+      width: min(360px, calc(100vw - 32px));
       max-width: calc(100vw - 32px);
       max-height: min(560px, calc(100vh - 120px));
       overflow: auto;
@@ -252,13 +288,6 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-
-      .empty-colors {
-        font-family: minecraft-simple;
-        font-size: var(--size-font-caption);
-        color: var(--color-theme-D5);
-        margin-top: 12px;
-      }
 
       .color {
         min-width: 72px;

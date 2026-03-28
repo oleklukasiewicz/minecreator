@@ -322,7 +322,7 @@
               })}
             {:else}
               <Button
-                size="small"
+                size="medium"
                 flat
                 noBorder
                 type={comparer(selectedItemValue, item, multiple) ||

@@ -28,6 +28,7 @@
 	},
 	"dependencies": {
 		"sass": "^1.98.0",
+		"svelte-i18n": "^4.0.1",
 		"svelte-writable-derived": "^3.1.1"
 	}
 }
