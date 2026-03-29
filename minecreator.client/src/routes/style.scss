@@ -54,7 +54,7 @@
     padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 
     #items-tools {
       display: grid;
@@ -74,7 +74,7 @@
 
     #items-content {
       display: grid;
-      gap: 24px;
+      gap: 12px;
       grid-template-columns: minmax(150px, 33%) 1fr;
       align-items: flex-start;
 

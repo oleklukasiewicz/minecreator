@@ -2,6 +2,8 @@
   import type { Outfit } from "$src/data/outfit";
   import Button from "../base/Button/Button.svelte";
   import CancelIcon from "$icons/close.svg?raw";
+  import Label from "../base/Label/Label.svelte";
+  import { _, t } from "svelte-i18n";
   //main imports
 
   let {
@@ -24,7 +26,13 @@
   <div class="preview"></div>
   <div class="data">
     <b>{outfit?.name?.length == 0 ? "Unnamed Outfit" : outfit?.name}</b>
-    <span>{outfit?.type}</span>
+    <div>
+      <Label
+        variant="common"
+        dense
+        text={outfit ? $t(`options.outfitType.${outfit.type}`) : ""}
+      />
+    </div>
   </div>
   <div class="actions" onclick={(e) => e.stopPropagation()}>
     <Button
@@ -43,8 +51,8 @@
     padding: 8px;
     box-sizing: border-box;
     display: grid;
-    gap: 8px;
-    grid-template-columns: 64px minmax(0, 1fr) auto;
+    gap: 12px;
+    grid-template-columns: 50px minmax(0, 1fr) auto;
     cursor: pointer;
     user-select: none;
     overflow: hidden;
@@ -60,14 +68,14 @@
       color: var(--color-accent-font);
     }
     .preview {
-      width: 64px;
-      height: 64px;
+      aspect-ratio: 1;
       background-color: var(--color-theme-D1);
     }
     .data {
       display: flex;
       flex-direction: column;
       text-align: left;
+      gap: 4px;
       min-width: 0;
       b {
         font-size: var(--size-font-subtitle);

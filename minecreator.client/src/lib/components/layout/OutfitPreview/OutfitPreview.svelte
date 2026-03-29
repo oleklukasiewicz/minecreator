@@ -31,7 +31,8 @@
 
   const translatedOutfitTypes = $derived(
     OUTFIT_TYPE_DATA.map(
-      (item) => new ValueData(item.value, $_(`options.outfitType.${item.value}`)),
+      (item) =>
+        new ValueData(item.value, $_(`options.outfitType.${item.value}`)),
     ),
   );
   const translatedOutfitStyles = $derived(
@@ -135,31 +136,38 @@
       <SectionTitle label={$_("outfitPreview.colors")} />
 
       <div class="color-section">
-        <div bind:this={colorPickerCaller} class="color-picker-caller">
-          <Button
-            disabled={outfit?.colors.length > 4}
-            icon={AddIcon}
-            label={$_("outfitPreview.addColor")}
-            size="medium"
-            onclick={() => (colorPickerOpened = !colorPickerOpened)}
-          />
-          <Flyout
-            bind:opened={colorPickerOpened}
-            caller={colorPickerCaller}
-            align="left"
-            autoWidth={false}
-          >
-            <div id="color-picker-container">
-              <ColorPicker
-                bind:selectedColor={colorPickerSelected}
-                onselect={addColorToOutfit}
-              />
-            </div></Flyout
-          >
+        <div class="color-actions">
+          <div bind:this={colorPickerCaller} class="color-picker-caller">
+            <Button
+              disabled={outfit?.colors.length > 4}
+              icon={AddIcon}
+              label={$_("outfitPreview.addColor")}
+              size="medium"
+              onclick={() => (colorPickerOpened = !colorPickerOpened)}
+            />
+            <Flyout
+              bind:opened={colorPickerOpened}
+              caller={colorPickerCaller}
+              align="left"
+              autoWidth={false}
+            >
+              <div id="color-picker-container">
+                <ColorPicker
+                  bind:selectedColor={colorPickerSelected}
+                  onselect={addColorToOutfit}
+                />
+              </div></Flyout
+            >
+          </div>
+          {#if outfit?.colors.length > 4}
+            <span class="preview-note">{$_("outfitPreview.maxColors")}</span>
+          {/if}
+          {#if outfit?.colors.length === 0}
+            <span class="preview-note">{$_("outfitPreview.noColors")}</span>
+          {/if}
         </div>
         <div class="colors">
           {#if outfit?.colors.length > 0}
-            <div class="separator vertical"></div>
             {#each outfit?.colors as color}
               <!-- svelte-ignore a11y_missing_attribute -->
               <a class="color" title={color}>
@@ -177,12 +185,6 @@
           {/if}
         </div>
       </div>
-      {#if outfit?.colors.length > 4}
-        <span class="preview-note">{$_("outfitPreview.maxColors")}</span>
-      {/if}
-      {#if outfit?.colors.length === 0}
-        <span class="preview-note">{$_("outfitPreview.noColors")}</span>
-      {/if}
     </div>
     <div class="category">
       <SectionTitle label={$_("outfitPreview.accessory")} />
@@ -279,12 +281,15 @@
       max-height: min(560px, calc(100vh - 120px));
       overflow: auto;
     }
-    .color-section {
-      grid-template-columns: auto 1fr;
-      display: grid;
+    .color-actions {
+      display: flex;
       gap: 8px;
+      .preview-note {
+        margin: 12px 0px;
+      }
     }
     .colors {
+      margin-top: 8px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;

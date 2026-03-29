@@ -188,8 +188,7 @@
           onclick={addDefaultOutfit}
           disabled={selectedVersion === null ||
             selectedSkinModel === null ||
-            selectedSkinModel.length === 0 ||
-            outfitList.length >= 7}
+            selectedSkinModel.length === 0}
         />
       </div>
       <div class="separator horizontal"></div>

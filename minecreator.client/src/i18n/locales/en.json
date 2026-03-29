@@ -16,6 +16,9 @@
     "newOutfit": "New outfit",
     "noOutfits": "No outfits"
   },
+  "outfitListItem": {
+    "unnamed": "Unnamed Outfit"
+  },
   "outfitPreview": {
     "name": "Name",
     "namePlaceholder": "Outfit Name",
