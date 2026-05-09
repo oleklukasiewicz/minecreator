@@ -2,26 +2,38 @@
   margin: 0 auto;
   padding: 12px;
   box-sizing: border-box;
-  max-width: 100%;
-  min-width: 80%;
+  max-width: 900px;
+  width: 80%;
   display: table;
   text-align: center;
+
+  #lang-select {
+    display: table;
+    text-align: right;
+    width: 100%;
+
+    div {
+      display: inline-block;
+      text-align: left;
+    }
+  }
+
   h1 {
-    margin-top: 15vh;
+    margin-top: 32px;
     font-family: minecraft;
     font-size: var(--size-font-header);
   }
+
   #toolbox {
     background-color: var(--color-theme);
     display: grid;
     padding: 12px;
     box-sizing: border-box;
-    grid-template-columns: minmax(200px, 25%) minmax(200px, 25%) 1fr minmax(
-        200px,
-        25%
-      );
+    grid-template-columns: minmax(200px, 25%) minmax(200px, 25%) 1fr minmax(200px,
+        25%);
     gap: 8px;
     margin-bottom: 12px;
+
     .option-select {
       width: 100%;
       display: flex;
@@ -29,25 +41,28 @@
       gap: 8px;
       text-align: left;
     }
+
     #generate {
       display: flex;
       width: 100%;
     }
   }
+
   #items {
     background-color: var(--color-theme);
     box-sizing: border-box;
     padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+
     #items-tools {
       display: grid;
       gap: 4px;
       grid-template-columns:
-        1fr minmax(120px, 15%) minmax(120px, 15%)
-        10px minmax(150px, 25%);
+        1fr minmax(120px, 15%) minmax(120px, 15%) 10px minmax(150px, 25%);
     }
+
     #no-outfits {
       color: var(--color-theme-D5);
       font-family: minecraft;
@@ -56,11 +71,13 @@
       width: 100%;
       margin: 10vh 0;
     }
+
     #items-content {
       display: grid;
       gap: 12px;
       grid-template-columns: minmax(150px, 33%) 1fr;
       align-items: flex-start;
+
       #items-list {
         display: flex;
         flex-direction: column;
@@ -68,20 +85,37 @@
       }
     }
   }
+
   &.mobile {
     margin: 0px;
     width: 100%;
+
     #toolbox {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 12px;
     }
+
     #items {
       #items-tools {
         display: flex;
         flex-direction: row;
         gap: 8px;
+      }
+
+      #items-content {
+        display: block;
+
+        #items-list {
+          width: 100%;
+        }
+
+        #items-preview {
+          width: 0;
+          height: 0;
+          overflow: visible;
+        }
       }
     }
   }

@@ -4,7 +4,13 @@
   //icons
   import CloseIcon from "$icons/close.svg?raw";
 
-  let { value = $bindable(""), clearable = false, placeholder = "", oninput } = $props();
+  let {
+    value = $bindable(""),
+    clearable = false,
+    placeholder = "",
+    maxLength = undefined,
+    oninput,
+  } = $props();
 
   const handleInput = (event: Event) => {
     if (oninput) oninput((event.target as HTMLInputElement).value);
@@ -15,13 +21,13 @@
   };
 </script>
 
-<div class="text-box">
+<div class="text-box" class:clearable class:has-value={value?.length > 0}>
   <!-- svelte-ignore event_directive_deprecated -->
-  <input bind:value oninput={handleInput} {placeholder} />
+  <input bind:value oninput={handleInput} {placeholder} maxlength={maxLength} />
   {#if clearable && value?.length > 0}
     <Button
       onlyIcon
-      style="height: 32px;border-left:2px solid var(--color-theme-D6);"
+      style="height: 30px;border-left:2px solid var(--color-theme-D6);"
       icon={CloseIcon}
       type="secondary"
       iconSize="auto"

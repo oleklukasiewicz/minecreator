@@ -1,23 +1,48 @@
 <script lang="ts">
+  import { ExportConfig } from "$data/export";
   import { IS_MOBILE_VIEW } from "$data/global";
-  import Button from "$lib/components/Button/Button.svelte";
+  import { ImportConfig, ImportConfigFromFile } from "$data/import";
+  import { GAME_VERSION, Outfit, SKIN_MODEL } from "$data/outfit";
+  import { ValueData } from "$src/helpers/dataHelper";
+  import { SUPPORTED_LOCALES, setAppLocale } from "$src/i18n";
+  import { _, locale } from "svelte-i18n";
+  import Button from "$lib/components/base/Button/Button.svelte";
+  import SectionTitle from "$lib/components/base/SectionTitle/SectionTitle.svelte";
+  import Select from "$lib/components/base/Select/Select.svelte";
+  import OutfitPreview from "$lib/components/layout/OutfitPreview/OutfitPreview.svelte";
+  import ClothListItem from "$lib/components/OutfitListItem/OutfitListItem.svelte";
+  import DragAndDrop from "$lib/components/other/DragAndDrop/DragAndDrop.svelte";
+  import ImportIcon from "$icons/download.svg?raw";
   import AddIcon from "$icons/plus.svg?raw";
   import ExportIcon from "$icons/upload.svg?raw";
-  import ImportIcon from "$icons/download.svg?raw";
-  import Select from "$lib/components/Select/Select.svelte";
-  import ClothListItem from "$lib/components/OutfitListItem/OutfitListItem.svelte";
-  import { GAME_VERSION, Outfit, SKIN_MODEL } from "$data/outfit";
-  import { ExportConfig } from "$src/data/export";
-  import { ImportConfig, ImportConfigFromFile } from "$src/data/import";
-  import DragAndDrop from "$lib/components/other/DragAndDrop/DragAndDrop.svelte";
-  import OutfitPreview from "$lib/components/layout/OutfitPreview/OutfitPreview.svelte";
-  import SectionTitle from "$lib/components/SectionTitle/SectionTitle.svelte";
+  import GenerateIcon from "$icons/zap.svg?raw";
+  import Dialog from "$lib/components/base/Dialog/Dialog.svelte";
 
   let selectedVersion = $state<string | null>("modern");
   let selectedSkinModel = $state<string[] | null>(["classic"]);
+  let currentLocale = $state<string>("en");
+  let outfitDialogOpen = $state(false);
 
   let outfitList: Outfit[] = $state<Outfit[]>([]);
   let selectedOutfit = $state<Outfit | null>(null);
+
+  const translatedGameVersions = $derived(
+    GAME_VERSION.map(
+      (item) =>
+        new ValueData(item.value, $_(`options.gameVersion.${item.value}`)),
+    ),
+  );
+  const translatedSkinModels = $derived(
+    SKIN_MODEL.map(
+      (item) =>
+        new ValueData(item.value, $_(`options.skinModel.${item.value}`)),
+    ),
+  );
+  const languageOptions = $derived(
+    SUPPORTED_LOCALES.map(
+      (code) => new ValueData(code, $_(`options.language.${code}`)),
+    ),
+  );
 
   const addDefaultOutfit = function () {
     const timestamp = Date.now();
@@ -26,12 +51,15 @@
 
     newOutfit.id = timestamp.toString();
     newOutfit.name = `Outfit ${outfitList.length + 1}`;
+    newOutfit.seed = timestamp.toString();
 
     outfitList = [newOutfit, ...outfitList];
     selectedOutfit = newOutfit;
+    if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
   };
   const setSelectedOutfit = function (outfit: Outfit) {
     selectedOutfit = outfit;
+    if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
   };
   const updateSelectedOutfit = function (updatedOutfit: Outfit) {
     if (!selectedOutfit) return;
@@ -47,7 +75,10 @@
     const data = await ImportConfig();
     if (data) {
       outfitList = [...data, ...outfitList];
-      selectedOutfit = null;
+      if (data.length > 0) {
+        selectedOutfit = outfitList[0];
+        if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
+      }
     }
   };
   const HandleDrop = async function (e: File[]) {
@@ -55,6 +86,10 @@
     if (file) {
       const data = await ImportConfigFromFile(file);
       outfitList = [...data, ...outfitList];
+      if (data.length > 0) {
+        selectedOutfit = outfitList[0];
+        if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
+      }
     }
   };
   const RemoveOutfit = function (outfit: Outfit) {
@@ -62,32 +97,55 @@
 
     if (selectedOutfit?.id === outfit.id) {
       selectedOutfit = outfitList.length > 0 ? outfitList[0] : null;
+      if (!selectedOutfit) outfitDialogOpen = false;
     }
   };
+
+  const changeLocale = (payload: { item: ValueData }) => {
+    currentLocale = payload.item.value;
+    setAppLocale(payload.item.value);
+  };
+
+  $effect(() => {
+    const activeLocale = $locale ?? "en";
+    if (currentLocale !== activeLocale) currentLocale = activeLocale;
+  });
 </script>
 
 <div id="container" class:mobile={$IS_MOBILE_VIEW}>
-  <h1>MineCreator</h1>
+  <div id="lang-select">
+    <div>
+      <Select
+        items={languageOptions}
+        selectedItem={currentLocale}
+        itemText="label"
+        itemValue="value"
+        placeholder={$_("common.select")}
+        onselect={changeLocale}
+      />
+    </div>
+  </div>
+  <h1>{$_("page.title")}</h1>
   <div id="toolbox">
     <div class="option-select">
-      <SectionTitle label="Game Version" />
+      <SectionTitle label={$_("page.gameVersion")} />
       <Select
-        items={GAME_VERSION}
+        items={translatedGameVersions}
         bind:selectedItem={selectedVersion}
         itemText="label"
         itemValue="value"
-        placeholder="Select game version"
+        placeholder={$_("page.gameVersionPlaceholder")}
       />
     </div>
     <div class="option-select">
-      <SectionTitle label="Skin Model" />
+      <SectionTitle label={$_("page.skinModel")} />
       <Select
-        items={SKIN_MODEL}
+        items={translatedSkinModels}
         bind:selectedItem={selectedSkinModel}
         itemText="label"
         itemValue="value"
         multiple
-        placeholder="Select skin model"
+        placeholder={$_("page.skinModelPlaceholder")}
       />
     </div>
     <div></div>
@@ -97,7 +155,8 @@
           selectedVersion === null ||
           selectedSkinModel === null ||
           selectedSkinModel.length === 0}
-        label="Generate"
+        label={$_("page.generate")}
+        icon={GenerateIcon}
         style="height:64px;"
         size="large"
         onclick={() => alert("Generate clicked!")}
@@ -110,31 +169,31 @@
         <div></div>
         <Button
           onlyIcon={$IS_MOBILE_VIEW}
-          label="Export"
+          label={$_("page.export")}
           type="tertiary"
           icon={ExportIcon}
           onclick={ExportData}
         />
         <Button
           onlyIcon={$IS_MOBILE_VIEW}
-          label="Import"
+          label={$_("page.import")}
           type="tertiary"
           icon={ImportIcon}
           onclick={ImportData}
         />
         <div class="separator vertical"></div>
         <Button
-          label="new item"
+          label={$_("page.newOutfit")}
           icon={AddIcon}
           onclick={addDefaultOutfit}
-          disabled={selectedVersion === null}
+          disabled={selectedVersion === null ||
+            selectedSkinModel === null ||
+            selectedSkinModel.length === 0}
         />
       </div>
       <div class="separator horizontal"></div>
       {#if outfitList.length === 0}
-        <span id="no-outfits"
-          >No outfits</span
-        >
+        <span id="no-outfits">{$_("page.noOutfits")}</span>
       {:else}
         <div id="items-content">
           <div id="items-list">
@@ -142,16 +201,30 @@
               <ClothListItem
                 {outfit}
                 onclick={() => setSelectedOutfit(outfit)}
-                selected={selectedOutfit?.id === outfit.id}
+                selected={selectedOutfit?.id === outfit.id && !$IS_MOBILE_VIEW}
                 onremove={() => RemoveOutfit(outfit)}
               />
             {/each}
           </div>
           <div id="items-preview">
-            <OutfitPreview
-              outfit={selectedOutfit}
-              onUpdate={updateSelectedOutfit}
-            />
+            {#if $IS_MOBILE_VIEW}
+              <Dialog
+                open={outfitDialogOpen && selectedOutfit !== null}
+                label={selectedOutfit?.name ??
+                  $_("outfitPreview.noOutfitSelected")}
+                onclose={() => (outfitDialogOpen = false)}
+              >
+                <OutfitPreview
+                  outfit={selectedOutfit}
+                  onUpdate={updateSelectedOutfit}
+                />
+              </Dialog>
+            {:else}
+              <OutfitPreview
+                outfit={selectedOutfit}
+                onUpdate={updateSelectedOutfit}
+              />
+            {/if}
           </div>
         </div>
       {/if}

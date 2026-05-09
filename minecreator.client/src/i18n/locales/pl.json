@@ -1,0 +1,81 @@
+{
+  "common": {
+    "select": "Wybierz",
+    "remove": "Usuń"
+  },
+  "page": {
+    "title": "MineCreator",
+    "language": "Język",
+    "gameVersion": "Wersja gry",
+    "gameVersionPlaceholder": "Wybierz wersję gry",
+    "skinModel": "Model postaci",
+    "skinModelPlaceholder": "Wybierz model postaci",
+    "generate": "Generuj",
+    "export": "Eksport",
+    "import": "Import",
+    "newOutfit": "Nowe ubranie",
+    "noOutfits": "Brak ubrań"
+  },
+  "outfitListItem": {
+    "unnamed": "Nienazwane ubranie"
+  },
+  "outfitPreview": {
+    "name": "Nazwa",
+    "namePlaceholder": "Nazwa ubrania",
+    "type": "Typ",
+    "typePlaceholder": "Wybierz typ ubrania",
+    "style": "Styl",
+    "stylePlaceholder": "Wybierz styl ubrania",
+    "colors": "Kolory",
+    "addColor": "Dodaj kolor",
+    "maxColors": "Maksymalnie 5 kolorów.",
+    "noColors": "Brak dodanych kolorów.",
+    "accessory": "Dodatki",
+    "accessoryPlaceholder": "Wybierz dodatki ubrania",
+    "seed": "Ziarno",
+    "seedPlaceholder": "Ziarno ubrania",
+    "samples": "Przykłady",
+    "samplesPlaceholder": "Wybierz liczbę przykładów",
+    "noOutfitSelected": "Nie wybrano ubrania"
+  },
+  "colorPicker": {
+    "hexPlaceholder": "Kolor HEX",
+    "invalidHex": "Niepoprawny kolor (#RGB lub #RRGGBB).",
+    "select": "Wybierz",
+    "selectSwatchAria": "Wybierz {hex}"
+  },
+  "options": {
+    "language": {
+      "en": "Angielski",
+      "pl": "Polski"
+    },
+    "gameVersion": {
+      "modern": "Nowoczesna",
+      "beta": "Beta i starsze"
+    },
+    "skinModel": {
+      "classic": "Klasyczny",
+      "slim": "Smukły"
+    },
+    "outfitType": {
+      "top": "Góra",
+      "hoodie": "Bluza",
+      "hat": "Czapka",
+      "bottom": "Spodnie",
+      "shoes": "Buty",
+      "suit": "Kostium"
+    },
+    "outfitStyle": {
+      "casual": "Codzienny",
+      "formal": "Formalny",
+      "sport": "Sportowy"
+    },
+    "outfitAccessory": {
+      "patches": "Naszywki",
+      "logo": "Logo",
+      "print": "Nadruk",
+      "pins": "Przypinki",
+      "buttons": "Guziki"
+    }
+  }
+}

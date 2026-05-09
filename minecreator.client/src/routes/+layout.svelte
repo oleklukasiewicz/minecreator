@@ -1,11 +1,13 @@
 <script lang="ts">
-  import favicon from "$lib/assets/favicon.svg";
-  import { Setup } from "$data/global";
   import { onMount } from "svelte";
+  import { Setup } from "$data/global";
+  import { initializeI18n } from "$src/i18n";
+  import favicon from "$lib/assets/favicon.svg";
   let { children } = $props();
 
   onMount(() => {
-	Setup();
+    initializeI18n();
+    Setup();
   });
 </script>
 

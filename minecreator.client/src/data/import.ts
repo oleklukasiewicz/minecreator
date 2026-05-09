@@ -1,4 +1,19 @@
-import type { Outfit } from "./outfit";
+import { createOutfit, type Outfit } from "$data/outfit";
+
+const parseOutfits = (value: unknown): Outfit[] => {
+  const normalizedSource = Array.isArray(value) ? value : [value];
+  return normalizedSource
+    .filter((item): item is Record<string, unknown> =>
+      item !== null && typeof item === "object",
+    )
+    .map((item) => createOutfit(item as Partial<Outfit>));
+};
+
+const readOutfitsFromFile = async (file: File): Promise<Outfit[]> => {
+  const text = await file.text();
+  const parsed = JSON.parse(text) as unknown;
+  return parseOutfits(parsed);
+};
 
 export const ImportConfig = async function (): Promise<Outfit[]> {
   const input = document.createElement("input");
@@ -7,9 +22,9 @@ export const ImportConfig = async function (): Promise<Outfit[]> {
   input.multiple = false;
   input.click();
 
-  const inputPromise = new Promise<any[]>((resolve, reject) => {
+  const inputPromise = new Promise<File[]>((resolve, reject) => {
     input.onchange = (event) => {
-      let files = (event.target as HTMLInputElement).files;
+      const files = (event.target as HTMLInputElement).files;
       if (files) {
         resolve(Array.from(files));
       } else {
@@ -19,12 +34,11 @@ export const ImportConfig = async function (): Promise<Outfit[]> {
   });
   const files = await inputPromise;
   const file = files[0];
-  const text = await file.text();
-  const data = JSON.parse(text) as Outfit[];
-  return data;
+  return readOutfitsFromFile(file);
 };
-export const ImportConfigFromFile = async function (file: File): Promise<Outfit[]> {
-  const text = await file.text();
-  const data = JSON.parse(text) as Outfit[];
-  return data;
+
+export const ImportConfigFromFile = async function (
+  file: File,
+): Promise<Outfit[]> {
+  return readOutfitsFromFile(file);
 };

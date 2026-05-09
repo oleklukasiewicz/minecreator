@@ -1,0 +1,81 @@
+{
+  "common": {
+    "select": "Select",
+    "remove": "Remove"
+  },
+  "page": {
+    "title": "MineCreator",
+    "language": "Language",
+    "gameVersion": "Game Version",
+    "gameVersionPlaceholder": "Select game version",
+    "skinModel": "Skin Model",
+    "skinModelPlaceholder": "Select skin model",
+    "generate": "Generate",
+    "export": "Export",
+    "import": "Import",
+    "newOutfit": "New outfit",
+    "noOutfits": "No outfits"
+  },
+  "outfitListItem": {
+    "unnamed": "Unnamed Outfit"
+  },
+  "outfitPreview": {
+    "name": "Name",
+    "namePlaceholder": "Outfit Name",
+    "type": "Type",
+    "typePlaceholder": "Select outfit type",
+    "style": "Style",
+    "stylePlaceholder": "Select outfit style",
+    "colors": "Colors",
+    "addColor": "Add Color",
+    "maxColors": "Maximum of 5 colors allowed.",
+    "noColors": "No colors added yet.",
+    "accessory": "Accessory",
+    "accessoryPlaceholder": "Select outfit accessory",
+    "seed": "Seed",
+    "seedPlaceholder": "Outfit Seed",
+    "samples": "Samples",
+    "samplesPlaceholder": "Select number of samples",
+    "noOutfitSelected": "No outfit selected"
+  },
+  "colorPicker": {
+    "hexPlaceholder": "Hex color",
+    "invalidHex": "Invalid color (#RGB or #RRGGBB).",
+    "select": "Select",
+    "selectSwatchAria": "Select {hex}"
+  },
+  "options": {
+    "language": {
+      "en": "English",
+      "pl": "Polish"
+    },
+    "gameVersion": {
+      "modern": "Modern",
+      "beta": "Beta and Lower"
+    },
+    "skinModel": {
+      "classic": "Classic",
+      "slim": "Slim"
+    },
+    "outfitType": {
+      "top": "Top",
+      "hoodie": "Hoodie",
+      "hat": "Hat",
+      "bottom": "Bottom",
+      "shoes": "Shoes",
+      "suit": "Suit"
+    },
+    "outfitStyle": {
+      "casual": "Casual",
+      "formal": "Formal",
+      "sport": "Sport"
+    },
+    "outfitAccessory": {
+      "patches": "Patches",
+      "logo": "Logo",
+      "print": "Print",
+      "pins": "Pins",
+      "buttons": "Buttons"
+    }
+  }
+}
