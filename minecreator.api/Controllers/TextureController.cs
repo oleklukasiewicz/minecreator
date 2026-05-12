@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.Formats.Png;
 using System.IO;
 using System;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace minecreator.api.Controllers
 {
@@ -18,30 +19,32 @@ namespace minecreator.api.Controllers
         public IActionResult TestTopOutfitModule(
             [FromQuery] OutfitStyle style = OutfitStyle.CASUAL,
             [FromQuery] OutfitModel model = OutfitModel.CLASSIC,
-            [FromQuery] string colorHex = "#262B38",
+            [FromQuery] string colorsHex = "#111f2f,#3cbef5",
             [FromQuery] string seed = "olek128")
         {
             try
             {
 
-                var color = Color.ParseHex(colorHex);
-                var rgbs = color.ToPixel<Rgba32>();
+                var colors = colorsHex.Split(',').Select(Color.ParseHex).Select(c => c.ToPixel<Rgba32>()).ToList();
                 var config = new OutfitConfiguration
                 {
                     Type = OutfitType.TOP,
                     Style = style,
-                    Colors = new List<SixLabors.ImageSharp.PixelFormats.Rgba32>
-                    {
-                        rgbs
-                    },
+                    Colors = colors,
                     Model = model,
                     Seed = seed
                 };
 
+
                 var module = new minecreator.api.Modules.TopOutfitTypeModule(config);
 
                 var textureMap = module.GenerateBaseTexture();
+                var acctexture = module.GenerateAccessoryArea();
                 textureMap = module.GenerateColoredTexture();
+                textureMap = module.GenerateAccessoryTexture();
+
+
+
                 var image = textureMap.Texture;
 
                 if (image == null)

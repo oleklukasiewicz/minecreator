@@ -96,7 +96,7 @@ namespace minecreator.api.Controllers
                 "6ab3db",
                 "8a61de",
                 "aaaaaa",
-                "576944"
+                "3cbef5"
             };
 
             var htmlBuilder = new System.Text.StringBuilder();

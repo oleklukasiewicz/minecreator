@@ -11,7 +11,7 @@ namespace minecreator.api.Helpers
         {
             var part = image.Clone();
             part.Mutate(x => x.Crop(area));
-           
+
             image.ProcessPixelRows(accessor =>
             {
                 for (int y = area.Top; y < area.Bottom; y++)
@@ -45,6 +45,191 @@ namespace minecreator.api.Helpers
                 }
             });
             return image;
+        }
+        public static List<Rectangle> DetectOutline(Image<Rgba32> image, bool top, bool bottom, bool left, bool right, int thickness = 1, bool onlyInner = false)
+        {
+            var rectangles = new List<Rectangle>();
+
+            image.ProcessPixelRows(accessor =>
+            {
+                int width = accessor.Width;
+                int height = accessor.Height;
+
+                for (int y = 0; y < height; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+
+                    for (int x = 0; x < width; x++)
+                    {
+                        var pixel = row[x];
+                        if (pixel.A > 0)
+                        {
+                            bool isOutline = false;
+
+                            if (top)
+                            {
+                                for (int i = 1; i <= thickness; i++)
+                                {
+                                    bool isEdge = (y - i < 0);
+                                    if (isEdge && onlyInner) break;
+                                    if (isEdge || accessor.GetRowSpan(y - i)[x].A == 0) { isOutline = true; break; }
+                                }
+                            }
+                            if (!isOutline && bottom)
+                            {
+                                for (int i = 1; i <= thickness; i++)
+                                {
+                                    bool isEdge = (y + i >= height);
+                                    if (isEdge && onlyInner) break;
+                                    if (isEdge || accessor.GetRowSpan(y + i)[x].A == 0) { isOutline = true; break; }
+                                }
+                            }
+                            if (!isOutline && left)
+                            {
+                                for (int i = 1; i <= thickness; i++)
+                                {
+                                    bool isEdge = (x - i < 0);
+                                    if (isEdge && onlyInner) break;
+                                    if (isEdge || row[x - i].A == 0) { isOutline = true; break; }
+                                }
+                            }
+                            if (!isOutline && right)
+                            {
+                                for (int i = 1; i <= thickness; i++)
+                                {
+                                    bool isEdge = (x + i >= width);
+                                    if (isEdge && onlyInner) break;
+                                    if (isEdge || row[x + i].A == 0) { isOutline = true; break; }
+                                }
+                            }
+
+                            if (isOutline)
+                            {
+                                rectangles.Add(new Rectangle(x, y, 1, 1));
+                            }
+                        }
+                    }
+                }
+            });
+
+            return MergeRectangles(rectangles);
+        }
+
+        private static List<Rectangle> MergeRectangles(List<Rectangle> input)
+        {
+            if (input == null || input.Count == 0)
+                return new List<Rectangle>();
+
+            var merged = new List<Rectangle>();
+            var groupedByY = input.GroupBy(r => r.Y).OrderBy(g => g.Key);
+
+            foreach (var group in groupedByY)
+            {
+                var sortedX = group.OrderBy(r => r.X).ToList();
+                int currentX = sortedX[0].X;
+                int y = sortedX[0].Y;
+                int consecutiveWidth = 1;
+
+                for (int i = 1; i < sortedX.Count; i++)
+                {
+                    if (sortedX[i].X == currentX + consecutiveWidth)
+                    {
+                        consecutiveWidth++;
+                    }
+                    else
+                    {
+                        merged.Add(new Rectangle(currentX, y, consecutiveWidth, 1));
+                        currentX = sortedX[i].X;
+                        consecutiveWidth = 1;
+                    }
+                }
+                merged.Add(new Rectangle(currentX, y, consecutiveWidth, 1));
+            }
+            return merged;
+        }
+        public static Image<Rgba32> FillWithAltPallete(Image<Rgba32> image, Rectangle area, Rgba32 baseColor, Rgba32 newbaseColor, List<Point> excludedPoints = null)
+        {
+            var result = image.Clone();
+
+            result.ProcessPixelRows(accessor =>
+            {
+                int startY = Math.Max(0, area.Top);
+                int endY = Math.Min(accessor.Height, area.Bottom);
+                int startX = Math.Max(0, area.Left);
+                int endX = Math.Min(accessor.Width, area.Right);
+
+                for (int y = startY; y < endY; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (int x = startX; x < endX; x++)
+                    {
+                        var pixel = row[x];
+                        if (pixel.A == 0) continue;
+                        if (excludedPoints != null && excludedPoints.Contains(new Point(x, y))) continue;
+
+                        float rDiff = (float)pixel.R - baseColor.R;
+                        float gDiff = (float)pixel.G - baseColor.G;
+                        float bDiff = (float)pixel.B - baseColor.B;
+
+                        int newR = Math.Clamp((int)(newbaseColor.R + rDiff), 0, 255);
+                        int newG = Math.Clamp((int)(newbaseColor.G + gDiff), 0, 255);
+                        int newB = Math.Clamp((int)(newbaseColor.B + bDiff), 0, 255);
+
+                        row[x] = new Rgba32((byte)newR, (byte)newG, (byte)newB, pixel.A);
+                    }
+                }
+            });
+
+            return result;
+        }
+        public static Image<Rgba32> ReplacePallete(Image<Rgba32> image, List<Rgba32> basePallete, List<Rgba32> newPallete)
+        {
+            var colorMap = new Dictionary<Rgba32, Rgba32>();
+
+            for (int i = 0; i < basePallete.Count; i++)
+            {
+                colorMap[basePallete[i]] = newPallete[i];
+            }
+            image.ProcessPixelRows(accessor =>
+            {
+                for (int y = 0; y < accessor.Height; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (int x = 0; x < row.Length; x++)
+                    {
+                        var currentColor = row[x];
+                        if (currentColor.A == 0)
+                            continue;
+                        if (colorMap.TryGetValue(currentColor, out var mappedColor))
+                        {
+                            row[x] = mappedColor;
+                        }
+                    }
+                }
+            });
+            return image;
+        }
+        public static Image<Rgba32> CopyOnlyWithPallete(Image<Rgba32> source, List<Rgba32> pallete)
+        {
+            var result = new Image<Rgba32>(source.Width, source.Height);
+            source.ProcessPixelRows(accessor =>
+            {
+                for (int y = 0; y < accessor.Height; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (int x = 0; x < row.Length; x++)
+                    {
+                        var pixel = row[x];
+                        if (pallete.Contains(pixel))
+                        {
+                            result[x, y] = pixel;
+                        }
+                    }
+                }
+            });
+
+
+            return result;
         }
     }
 }

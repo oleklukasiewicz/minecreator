@@ -21,6 +21,8 @@ namespace minecreator.api.Model
     {
         GLASSES,
         PINS,
+        BUTTONS,
+        IMAGES,
     }
     public enum OutfitModel
     {

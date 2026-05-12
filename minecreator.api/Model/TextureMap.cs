@@ -96,6 +96,19 @@ namespace minecreator.api.Model
             partImage.Mutate(x => x.Crop(area.OuterArea));
             return partImage;
         }
+        public TextureMapFullPart GetFullPart(TextureMapPart part)
+        {
+            return new TextureMapFullPart
+            {
+                Part = GetPart(part),
+                OuterPart = GetOuterPart(part)
+            };
+        }
+        public void SetFullPart(TextureMapFullPart fullPart, TextureMapPart part)
+        {
+            SetPart(part, fullPart.Part);
+            SetOuterPart(part, fullPart.OuterPart);
+        }
         public void SetPart(TextureMapPart part, Image<Rgba32> image)
         {
             var model = GetModelMap();

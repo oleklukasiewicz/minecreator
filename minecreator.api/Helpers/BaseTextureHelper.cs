@@ -9,7 +9,8 @@ namespace minecreator.api.Helpers
     {
         private static List<BaseTexture> baseTextures = new List<BaseTexture>()
         {
-            new TopCasualBaseTexture()
+            new ClassicTopCasualBaseTexture(),
+            new SlimTopCasualBaseTexture(),
         };
         public static TextureMap? LoadBaseTexture(OutfitStyle style, OutfitType type, OutfitModel model)
         {

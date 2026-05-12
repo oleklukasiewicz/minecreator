@@ -9,5 +9,6 @@ namespace minecreator.api.Model.Interface
         public TextureMap GenerateBaseTexture();
         public TextureMap GenerateColoredTexture();
         public TextureMap GenerateAccessoryTexture();
+        public TextureMap GenerateAccessoryArea();
     }
 }
