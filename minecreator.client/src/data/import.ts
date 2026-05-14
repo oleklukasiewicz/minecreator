@@ -1,7 +1,8 @@
 import { createOutfit, type Outfit } from "$data/outfit";
 
-const parseOutfits = (value: unknown): Outfit[] => {
-  const normalizedSource = Array.isArray(value) ? value : [value];
+const parseOutfits = (value: any): Outfit[] => {
+  const valueOutfits = value.outfits ?? value;
+  const normalizedSource = Array.isArray(valueOutfits) ? valueOutfits : [valueOutfits];
   return normalizedSource
     .filter((item): item is Record<string, unknown> =>
       item !== null && typeof item === "object",

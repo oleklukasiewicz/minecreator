@@ -1,10 +1,5 @@
 <script lang="ts">
-  import {
-    OUTFIT_ACCESSORY_DATA,
-    OUTFIT_STYLE_DATA,
-    OUTFIT_TYPE_DATA,
-    type Outfit,
-  } from "$src/data/outfit";
+  import { type Outfit } from "$src/data/outfit";
   import { ValueData } from "$src/helpers/dataHelper";
   import Button from "$lib/components/base/Button/Button.svelte";
   import ColorPicker from "$lib/components/base/ColorPicker/ColorPicker.svelte";
@@ -16,11 +11,14 @@
   import AddIcon from "$icons/plus.svg?raw";
   import { IS_MOBILE_VIEW } from "$src/data/global";
   import { _ } from "svelte-i18n";
+  import { Configuration } from "$src/data/config";
 
   let {
+    configuration,
     outfit = null,
     onUpdate,
   }: {
+    configuration: Configuration;
     outfit?: Outfit | null;
     onUpdate?: (value: Outfit) => void;
   } = $props();
@@ -30,27 +28,45 @@
   let colorPickerSelected = $state("#C6C6C6");
 
   const translatedOutfitTypes = $derived(
-    OUTFIT_TYPE_DATA.map(
-      (item) =>
-        new ValueData(item.value, $_(`options.outfitType.${item.value}`)),
+    configuration.modulesConfig.map(
+      (m) =>
+        new ValueData(
+          m.name.toLowerCase(),
+          $_(`options.outfitType.${m.name.toLowerCase()}`),
+        ),
     ),
   );
   const translatedOutfitStyles = $derived(
-    OUTFIT_STYLE_DATA.map(
-      (item) =>
-        new ValueData(item.value, $_(`options.outfitStyle.${item.value}`)),
-    ),
+    configuration.modulesConfig
+      .filter((m) => m.name.toUpperCase() === outfit?.type.toUpperCase())[0]
+      ?.styles.map(
+        (style) =>
+          new ValueData(
+            style,
+            $_(`options.outfitStyle.${style.toLowerCase()}`),
+          ),
+      ) || [],
   );
   const translatedAccessories = $derived(
-    OUTFIT_ACCESSORY_DATA.map(
-      (item) =>
-        new ValueData(item.value, $_(`options.outfitAccessory.${item.value}`)),
+    configuration.modulesConfig
+      .filter((m) => m.name.toUpperCase() === outfit?.type.toUpperCase())[0]
+      ?.accessory.map(
+        (acc) =>
+          new ValueData(
+            acc,
+            $_(`options.outfitAccessory.${acc.toLowerCase()}`),
+          ),
+      ),
+  );
+  const sampleOptions = $derived.by(() =>
+    Array.from(
+      { length: configuration?.appConfig.maxSamplesCount || 0 },
+      (_, index) => ({
+        label: String(index + 1),
+        value: index + 1,
+      }),
     ),
   );
-  const sampleOptions = Array.from({ length: 5 }, (_, index) => ({
-    label: String(index + 1),
-    value: index + 1,
-  }));
 
   const normalizeHex = (value: string) => {
     const normalized = value.trim().toUpperCase();
@@ -123,6 +139,7 @@
         <div class="sub-section">
           <SectionTitle label={$_("outfitPreview.style")} />
           <Select
+            disabled={!outfit.type}
             items={translatedOutfitStyles}
             selectedItem={outfit.style}
             itemText="label"
@@ -139,7 +156,8 @@
         <div class="color-actions">
           <div bind:this={colorPickerCaller} class="color-picker-caller">
             <Button
-              disabled={outfit?.colors.length > 4}
+              disabled={outfit?.colors.length >
+                configuration.appConfig.maxColorCount - 1}
               icon={AddIcon}
               label={$_("outfitPreview.addColor")}
               size="medium"
@@ -159,7 +177,7 @@
               </div></Flyout
             >
           </div>
-          {#if outfit?.colors.length > 4}
+          {#if outfit?.colors.length > configuration.appConfig.maxColorCount - 1}
             <span class="preview-note">{$_("outfitPreview.maxColors")}</span>
           {/if}
           {#if outfit?.colors.length === 0}

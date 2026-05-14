@@ -28,7 +28,7 @@
     "stylePlaceholder": "Wybierz styl ubrania",
     "colors": "Kolory",
     "addColor": "Dodaj kolor",
-    "maxColors": "Maksymalnie 5 kolorów.",
+    "maxColors": "Osiągnięto maksymalną liczbę kolorów.",
     "noColors": "Brak dodanych kolorów.",
     "accessory": "Dodatki",
     "accessoryPlaceholder": "Wybierz dodatki ubrania",
@@ -73,7 +73,7 @@
     "outfitAccessory": {
       "patches": "Naszywki",
       "logo": "Logo",
-      "print": "Nadruk",
+      "images": "Nadruk",
       "pins": "Przypinki",
       "buttons": "Guziki"
     }

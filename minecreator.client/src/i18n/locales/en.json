@@ -28,7 +28,7 @@
     "stylePlaceholder": "Select outfit style",
     "colors": "Colors",
     "addColor": "Add Color",
-    "maxColors": "Maximum of 5 colors allowed.",
+    "maxColors": "You have reached the maximum number of colors.",
     "noColors": "No colors added yet.",
     "accessory": "Accessory",
     "accessoryPlaceholder": "Select outfit accessory",
@@ -73,7 +73,7 @@
     "outfitAccessory": {
       "patches": "Patches",
       "logo": "Logo",
-      "print": "Print",
+      "images": "Print",
       "pins": "Pins",
       "buttons": "Buttons"
     }

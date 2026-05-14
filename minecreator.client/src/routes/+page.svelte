@@ -17,9 +17,12 @@
   import ExportIcon from "$icons/upload.svg?raw";
   import GenerateIcon from "$icons/zap.svg?raw";
   import Dialog from "$lib/components/base/Dialog/Dialog.svelte";
+  import { onMount } from "svelte";
+  import { GenerateOutfits, GetConfiguration } from "$src/data/api";
+  import { Configuration } from "$src/data/config";
 
   let selectedVersion = $state<string | null>("modern");
-  let selectedSkinModel = $state<string[] | null>(["classic"]);
+  let selectedSkinModel = $state<string>("classic");
   let currentLocale = $state<string>("en");
   let outfitDialogOpen = $state(false);
 
@@ -43,6 +46,14 @@
       (code) => new ValueData(code, $_(`options.language.${code}`)),
     ),
   );
+  let configuration: Configuration = $state(new Configuration());
+  //mount
+  onMount(async () => {
+    //getconfig
+    var config = await GetConfiguration();
+
+    configuration = config;
+  });
 
   const addDefaultOutfit = function () {
     const timestamp = Date.now();
@@ -52,6 +63,9 @@
     newOutfit.id = timestamp.toString();
     newOutfit.name = `Outfit ${outfitList.length + 1}`;
     newOutfit.seed = timestamp.toString();
+    newOutfit.samples = 1;
+    newOutfit.type = configuration.modulesConfig[0]?.name.toLowerCase();
+    newOutfit.style = configuration.modulesConfig[0]?.styles[0].toLowerCase();
 
     outfitList = [newOutfit, ...outfitList];
     selectedOutfit = newOutfit;
@@ -69,7 +83,7 @@
     selectedOutfit = updated;
   };
   const ExportData = async function () {
-    await ExportConfig(outfitList);
+    await ExportConfig(outfitList, selectedSkinModel);
   };
   const ImportData = async function () {
     const data = await ImportConfig();
@@ -104,6 +118,19 @@
   const changeLocale = (payload: { item: ValueData }) => {
     currentLocale = payload.item.value;
     setAppLocale(payload.item.value);
+  };
+  const generateOutfits = async function () {
+    const json = JSON.stringify(
+      {
+        model: selectedSkinModel,
+        outfits: outfitList.map((o) => o.ToExportModel()),
+      },
+      null,
+      2,
+    );
+
+    var generated = await GenerateOutfits(json);
+    console.log(generated);
   };
 
   $effect(() => {
@@ -144,7 +171,6 @@
         bind:selectedItem={selectedSkinModel}
         itemText="label"
         itemValue="value"
-        multiple
         placeholder={$_("page.skinModelPlaceholder")}
       />
     </div>
@@ -159,7 +185,7 @@
         icon={GenerateIcon}
         style="height:64px;"
         size="large"
-        onclick={() => alert("Generate clicked!")}
+        onclick={() => generateOutfits()}
       />
     </div>
   </div>
@@ -217,12 +243,14 @@
                 <OutfitPreview
                   outfit={selectedOutfit}
                   onUpdate={updateSelectedOutfit}
+                  {configuration}
                 />
               </Dialog>
             {:else}
               <OutfitPreview
                 outfit={selectedOutfit}
                 onUpdate={updateSelectedOutfit}
+                {configuration}
               />
             {/if}
           </div>
