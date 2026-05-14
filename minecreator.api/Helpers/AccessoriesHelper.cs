@@ -30,22 +30,41 @@ namespace minecreator.api.Helpers
             var texture = Image.Load<Rgba32>(imgBytes);
             return texture;
         }
-        public static Image<Rgba32> ApplyConfigurationToAccessory(OutfitAccessoryItem accessory, OutfitConfiguration config)
+        public static Image<Rgba32> PaintAccessory(Image<Rgba32> texture, ColorPallete pallete)
         {
-            var texture = LoadAccessory(accessory);
-            if (accessory.IsReadyForColor == false)
-                return texture;
 
-            //coloring
-            var baseColor = config.Colors[0];
-            var contrastColor = ColorHelper.GetContrast(baseColor, config.Colors);
-            var colorpallete = ColorHelper.GenerateDefaultPallete(contrastColor);
-            var colors = ColorHelper.ExtractAndSortColorsByLuminance(texture);
-            colors = ColorHelper.ExpandPalette(colors, ColorHelper.GLOBAL_COLORS[TextureGlobalColor.Base], colorpallete.Count);
-
-            texture=TextureManupulationHelper.ReplacePallete(texture, colors, colorpallete);
+            texture.ProcessPixelRows(accessor =>
+            {
+                for (int y = 0; y < accessor.Height; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (int x = 0; x < row.Length; x++)
+                    {
+                        var color = row[x];
+                        if (color.A == 0)
+                            continue;
+                        row[x] = ColorHelper.MapToPallete(color, pallete);
+                    }
+                }
+            });
             return texture;
+        }
+        public static List<OutfitAccessoryLocation> GetLocationsForConfig(List<OutfitAccessoryLocation> locations, OutfitConfiguration config,int seed)
+        {
+            var result = new List<OutfitAccessoryLocation>();
+            var grouped = locations
+                .Where(l => config.Accessories.Contains(l.Type))
+                .GroupBy(l => l.Type);
+
+            foreach (var group in grouped)
+            {
+                var available = group.ToList();
+                if (available.Count > 0)
+                {
+                    result.Add(available[seed % available.Count]);
+                }
+            }
+            return result;
         }
     }
 }
-

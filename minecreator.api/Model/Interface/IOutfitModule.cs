@@ -5,10 +5,14 @@ namespace minecreator.api.Model.Interface
 {
     public interface IOutfitModule
     {
+        public OutfitConfiguration Configuration { get; set; }
+        public OutfitModuleWorkspace Workspace { get; set; }
         public bool SetConfiguration(OutfitConfiguration config);
         public TextureMap GenerateBaseTexture();
-        public TextureMap GenerateColoredTexture();
+        public TextureMap GenerateDetailsTexture();
         public TextureMap GenerateAccessoryTexture();
-        public TextureMap GenerateAccessoryArea();
+        public TextureMap GenerateAccessories();
+        public TextureMap GenerateColoredTexture();
+        public TextureMap MergeTextures(bool details, bool accessories);
     }
 }

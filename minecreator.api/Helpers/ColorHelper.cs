@@ -17,9 +17,106 @@ namespace minecreator.api.Helpers
         public TextureGlobalColor ColorType { get; set; }
         public List<Rgba32> Colors { get; set; }
     }
-
+    public class ColorPallete
+    {
+        public Rgba32 BaseColor { get; set; }
+        public List<Rgba32> Colors { get; set; }
+    }
     public static class ColorHelper
     {
+        private static int _palleteColorCount = 5;
+        public static List<ColorPallete> COLORS_PALLETE { get; private set; } = new List<ColorPallete>();
+
+        public static ColorPallete DEFAULT_PALLETE
+        {
+            get => COLORS_PALLETE.Where(x => x.BaseColor.R == x.BaseColor.G && x.BaseColor.R == x.BaseColor.B).FirstOrDefault();
+        }
+        public static int PalleteColorSize => _palleteColorCount;
+        public static void Init()
+        {
+            int[] colorValue = new int[]
+            {
+                128,96
+            };
+            int maxPalletsCount = 5;
+
+            var mutations = new List<Rgba32>();
+
+            mutations.Add(new Rgba32((byte)colorValue[0], (byte)colorValue[0], (byte)colorValue[0], 255));
+
+            foreach (var r in colorValue)
+            {
+                foreach (var g in colorValue)
+                {
+                    foreach (var b in colorValue)
+                    {
+                        if (r == g && g == b)
+                        {
+                            continue;
+                        }
+                        mutations.Add(new Rgba32((byte)r, (byte)g, (byte)b, 255));
+                        if (mutations.Count >= (maxPalletsCount - 2))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            foreach (var color in mutations)
+            {
+                var colors = ExpandPalette(new List<Rgba32>(), color, _palleteColorCount);
+                var colropallete = new ColorPallete
+                {
+                    BaseColor = color,
+                    Colors = colors
+                };
+                COLORS_PALLETE.Add(colropallete);
+            }
+        }
+
+
+        public static Rgba32 MapColor(Rgba32 color, Rgba32 targetBaseColor)
+        {
+            var targetPallete = COLORS_PALLETE.FirstOrDefault(p => p.BaseColor == targetBaseColor);
+            var baseColorPallete = GetPallete(color);
+            if (baseColorPallete == null)
+            {
+                return color;
+            }
+            var colorIndex = baseColorPallete.Colors.IndexOf(color);
+            if (colorIndex != -1)
+            {
+                return targetPallete.Colors[colorIndex];
+            }
+            return color;
+        }
+        public static Rgba32 MapColor(Rgba32 color, List<ColorPallete> pallets)
+        {
+            var foundpallete = GetPallete(color);
+            if (foundpallete == null)
+                return color;
+            var palleteIndex = COLORS_PALLETE.IndexOf(foundpallete);
+            var colorIndex = foundpallete.Colors.IndexOf(color);
+            return pallets[palleteIndex].Colors[colorIndex];
+        }
+        public static Rgba32 MapToPallete(Rgba32 color, ColorPallete pallete)
+        {
+            var basePallete = GetPallete(color);
+            if (basePallete == null)
+                return color;
+            var colorIndex = basePallete.Colors.IndexOf(color);
+            if (colorIndex != -1)
+            {
+                return pallete.Colors[colorIndex];
+            }
+            return color;
+        }
+        public static ColorPallete GetPallete(Rgba32 color, List<ColorPallete> pallets = null)
+        {
+            if (pallets == null)
+                pallets = COLORS_PALLETE;
+            return pallets.Where(p => p.Colors.Contains(color)).FirstOrDefault();
+        }
         public static Dictionary<TextureGlobalColor, Rgba32> GLOBAL_COLORS = new Dictionary<TextureGlobalColor, Rgba32>()
     {
         { TextureGlobalColor.Base, new Rgba32(128, 128, 128, 255) },
@@ -89,7 +186,7 @@ namespace minecreator.api.Helpers
                 .OrderBy(c => c.R + c.G + c.B)
                 .Distinct()
                 .ToList();
-            int stepR = 25, stepG = 25, stepB = 25;
+            int stepR = 16, stepG = 16, stepB = 16;
             if (darkerInputs.Count > 0)
             {
                 stepR = Math.Abs(baseColor.R - darkerInputs[0].R);
@@ -178,7 +275,7 @@ namespace minecreator.api.Helpers
         }
         public static List<Rgba32> GenerateDefaultPallete(Rgba32 baseColor)
         {
-            return GeneratePallete(baseColor, 5, 15, 8, 5);
+            return GeneratePallete(baseColor, _palleteColorCount, 15, 8, 5);
         }
         public static Rgba32 GetBrighter(List<Rgba32> pallete, Rgba32 color)
         {
@@ -189,35 +286,25 @@ namespace minecreator.api.Helpers
             }
             return color;
         }
-        public static Dictionary<TextureGlobalColor, TextureColorPallete> ExpandToGlobalPallets(List<Rgba32> inputColors, int maxColors = 5)
+        public static Rgba32 GetBrighter(ColorPallete pallete, Rgba32 color)
         {
-            var result = new Dictionary<TextureGlobalColor, TextureColorPallete>();
-            foreach (var inputColor in GLOBAL_COLORS)
+            var index = pallete.Colors.IndexOf(color);
+            if (index < pallete.Colors.Count - 1)
             {
-                var matchedColors = GetColorsFromPallete(inputColors, inputColor.Value);
-                var expanded = ExpandPalette(matchedColors, inputColor.Value, maxColors);
-                var pallete = new TextureColorPallete
-                {
-                    ColorType = inputColor.Key,
-                    Colors = expanded
-                };
-                if (!result.ContainsKey(inputColor.Key))
-                {
-                    result[inputColor.Key] = pallete;
-                }
+                return pallete.Colors[index + 1];
             }
-            return result;
+            return color;
         }
-        public static Rgba32 GetContrast(Rgba32 baseColor, List<Rgba32> pallete)
+        public static Rgba32 GetContrast(Rgba32 baseColor, List<Rgba32> colors)
         {
-            if (pallete == null || pallete.Count == 0)
+            if (colors == null || colors.Count == 0)
                 return baseColor;
             float baseLuminance = GetRelativeLuminance(baseColor);
 
-            Rgba32 bestColor = pallete[0];
+            Rgba32 bestColor = colors[0];
             float maxDifference = -1f;
 
-            foreach (var color in pallete)
+            foreach (var color in colors)
             {
                 float currentLuminance = GetRelativeLuminance(color);
                 float difference = Math.Abs(baseLuminance - currentLuminance);
@@ -234,6 +321,37 @@ namespace minecreator.api.Helpers
         private static float GetRelativeLuminance(Rgba32 color)
         {
             return (0.2126f * color.R / 255f) + (0.7152f * color.G / 255f) + (0.0722f * color.B / 255f);
+        }
+        public static Rgba32 GetDominant(Image<Rgba32> image)
+        {
+            Rgba32 dominantColor = default;
+            if (image != null)
+            {
+                var colorCounts = new Dictionary<Rgba32, int>();
+                image.ProcessPixelRows(accessor =>
+                {
+                    for (int y = 0; y < accessor.Height; y++)
+                    {
+                        Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
+                        foreach (ref Rgba32 pixel in pixelRow)
+                        {
+                            if (pixel.A > 0)
+                            {
+                                if (colorCounts.ContainsKey(pixel))
+                                {
+                                    colorCounts[pixel]++;
+                                }
+                                else
+                                {
+                                    colorCounts[pixel] = 1;
+                                }
+                            }
+                        }
+                    }
+                });
+                dominantColor = colorCounts.OrderByDescending(kv => kv.Value).FirstOrDefault().Key;
+            }
+            return dominantColor;
         }
     }
 }

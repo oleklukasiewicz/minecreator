@@ -27,23 +27,10 @@ namespace minecreator.api.Helpers
             image.Mutate(x => x.DrawImage(part, targetPosition, new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.Src }));
             return image;
         }
-        public static Image<Rgba32> DrawOnVisible(Image<Rgba32> source, Image<Rgba32> layer)
+        public static Image<Rgba32> Merge(Image<Rgba32> source, Image<Rgba32> layer)
         {
-            var image = source.Clone();
-            image.ProcessPixelRows(accessor =>
-            {
-                for (int y = 0; y < accessor.Height; y++)
-                {
-                    var row = accessor.GetRowSpan(y);
-                    for (int x = 0; x < row.Length; x++)
-                    {
-                        if (row[x].A > 0)
-                        {
-                            row[x] = layer[x, y];
-                        }
-                    }
-                }
-            });
+            Image<Rgba32> image = source.Clone();
+            image.Mutate(x => x.DrawImage(layer, new Point(0, 0), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.SrcOver }));
             return image;
         }
         public static List<Rectangle> DetectOutline(Image<Rgba32> image, bool top, bool bottom, bool left, bool right, int thickness = 1, bool onlyInner = false)
@@ -230,6 +217,17 @@ namespace minecreator.api.Helpers
 
 
             return result;
+        }
+        public static Image<Rgba32> CopyRectangles(Image<Rgba32> targetImage, Image<Rgba32> source, List<Rectangle> rectangles)
+        {
+            foreach (var rect in rectangles)
+            {
+                using (var cropped = source.Clone(x => x.Crop(rect)))
+                {
+                    targetImage.Mutate(x => x.DrawImage(cropped, rect.Location, 1f));
+                }
+            }
+            return targetImage;
         }
     }
 }

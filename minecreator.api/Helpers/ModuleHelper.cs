@@ -6,18 +6,17 @@ namespace minecreator.api.Helpers
 {
     public static class ModuleHelper
     {
-        public static TextureMapFullPart ProcessTexturePart(TextureMapFullPart source, OutfityTypeCharacteristics characteristics, Image<Rgba32> pattern, 
-            Func<OutfityTypeCharacteristics, Image<Rgba32>, Image<Rgba32>, Image<Rgba32>> processPart, 
-            Func<OutfityTypeCharacteristics, Image<Rgba32>, Image<Rgba32>, Image<Rgba32>, Image<Rgba32>> processOuterPart)
+        public static TextureMapFullPart ProcessTexturePart(TextureMapFullPart source, OutfityTypeCharacteristics characteristics, TexturePattern pattern,
+            Func<OutfityTypeCharacteristics, Image<Rgba32>, Image<Rgba32>, TextureMapFullPart> processPart)
         {
             var innerpart = source.Part;
-            var innerPartresult = processPart(characteristics, pattern, innerpart);
-            source.Part = innerPartresult;
-
             var outerpart = source.OuterPart;
-            var outerPartresult = processOuterPart(characteristics, pattern, outerpart,innerPartresult);
-            source.OuterPart = outerPartresult;
+            if (pattern != null)
+                innerpart = PatternHelper.ApplyPattern(innerpart, pattern);
 
+            var innerPartresult = processPart(characteristics, innerpart, outerpart);
+            source.Part = innerPartresult.Part;
+            source.OuterPart = outerpart;
             return source;
         }
     }

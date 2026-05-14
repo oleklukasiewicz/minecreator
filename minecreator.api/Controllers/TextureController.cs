@@ -32,17 +32,24 @@ namespace minecreator.api.Controllers
                     Style = style,
                     Colors = colors,
                     Model = model,
-                    Seed = seed
+                    Seed = seed,
+                    Accessories = new List<OutfitAccessory>
+                    {
+                      
+                      
+                    }
                 };
 
 
                 var module = new minecreator.api.Modules.TopOutfitTypeModule(config);
 
                 var textureMap = module.GenerateBaseTexture();
-                var acctexture = module.GenerateAccessoryArea();
-                textureMap = module.GenerateColoredTexture();
+                textureMap = module.GenerateDetailsTexture();
                 textureMap = module.GenerateAccessoryTexture();
-
+                textureMap = module.GenerateColoredTexture();
+                var acctexture = module.GenerateAccessories();
+                var txt = acctexture.ToBase64();
+                textureMap = module.MergeTextures(true, true);
 
 
                 var image = textureMap.Texture;

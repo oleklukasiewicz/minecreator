@@ -1,4 +1,5 @@
-﻿using minecreator.api.Helpers;
+﻿
+using minecreator.api.Helpers;
 using minecreator.api.Model;
 using minecreator.api.Model.Interface;
 using SixLabors.ImageSharp;
@@ -9,268 +10,271 @@ using System.Reflection.PortableExecutable;
 
 namespace minecreator.api.Modules
 {
-    public class TopOutfitTypeModule : IOutfitModule
+    public class TopOutfitTypeModule : OutfitModule
     {
-        private OutfitConfiguration _config;
-        private TextureMap _texturemap;
-        private TextureMap _accessoriestexturemap;
-        private List<OutfitAccessoryLocation> _accessoriesLocations = new List<OutfitAccessoryLocation>();
         public TopOutfitTypeModule(OutfitConfiguration config)
         {
             SetConfiguration(config);
         }
-        public bool SetConfiguration(OutfitConfiguration config)
-        {
-            _config = config;
-            return true;
-        }
         public TextureMap GenerateBaseTexture()
         {
-            var textureMap = new TextureMap();
-
-            var basetextureMap = BaseTextureHelper.LoadBaseTexture(_config.Style, _config.Type, _config.Model);
-            var colors = ColorHelper.ExtractAndSortColorsByLuminance(basetextureMap.Texture);
-
-            textureMap.CopyParts(basetextureMap, new List<TextureMapPart>
+            Workspace.Texture.CopyParts(Workspace.BaseTexture, new List<TextureMapPart>
             { TextureMapPart.BODY, TextureMapPart.LEFT_ARM, TextureMapPart.RIGHT_ARM });
 
-            var characteristics = new OutfityTypeCharacteristics(_config.Seed);
-            //apply material characteristic for body
-            var materialCharacteristic = (characteristics.Material / 10) % 3;
-            Image<Rgba32> bodyPattern = null;
-            Image<Rgba32> leftarmPattern = null;
-            Image<Rgba32> rightarmPattern = null;
+            var materialCharacteristic = Workspace.Characteristics.Material % 4;
+
+            TexturePattern bodyPattern = null;
+            TexturePattern leftarmPattern = null;
+            TexturePattern rightarmPattern = null;
+            Point patternSize = new Point(24, 24);
+
             if (materialCharacteristic > 0)
             {
 
                 if (materialCharacteristic == 1) // flannel
                 {
-                    bodyPattern = PatternHelper.Flannel(new Point(24, 24), 2, new Point(0, 0), colors);
-                    if (_config.Model == OutfitModel.SLIM)
+                    bodyPattern = PatternHelper.Flannel(patternSize, 2, new Point(0, 0), ColorHelper.DEFAULT_PALLETE.Colors);
+                    if (Configuration.Model == OutfitModel.SLIM)
                     {
-                        leftarmPattern = PatternHelper.Flannel(new Point(24, 24), 2, new Point(0, 1), colors);
-                        rightarmPattern = PatternHelper.Flannel(new Point(24, 24), 2, new Point(1, 1), colors);
+                        leftarmPattern = PatternHelper.Flannel(patternSize, 2, new Point(0, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                        rightarmPattern = PatternHelper.Flannel(patternSize, 2, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
                     }
                     else
                     {
-                        leftarmPattern = PatternHelper.Flannel(new Point(24, 24), 2, new Point(1, 1), colors);
-                        rightarmPattern = PatternHelper.Flannel(new Point(24, 24), 2, new Point(1, 1), colors);
+                        leftarmPattern = PatternHelper.Flannel(patternSize, 2, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                        rightarmPattern = PatternHelper.Flannel(patternSize, 2, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
                     }
                 }
                 else if (materialCharacteristic == 2) // stripes
                 {
-                    var stripespattern = new List<int>();
-                    var stripesColors = Math.Max(2, colors.Count - Math.Abs((int)characteristics.Hash % colors.Count));
-                    for (int i = 0; i < stripesColors; i++)
-                    {
-                        stripespattern.Add(Math.Abs((int)characteristics.Hash % (10 * (i + 1)) % 2) + 1);
-                    }
 
-                    bodyPattern = PatternHelper.Stripes(new Point(24, 24), new Point(0, 0), stripespattern, colors);
-                    leftarmPattern = bodyPattern;
-                    rightarmPattern = bodyPattern;
+                    var stripes = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
+                    .Take(Configuration.Colors.Count)
+                    .OrderBy(c =>
+                    {
+                        int colorKey = c.R | (c.G << 8) | (c.B << 16);
+                        return (Workspace.Characteristics.BaseDecoration ^ colorKey).GetHashCode();
+                    })
+                    .ToList();
+
+                    var stripespattern = new List<int>();
+                    int h = (int)Workspace.Characteristics.Hash;
+
+                    int maxPossibleColors = Math.Max(1, Configuration.Colors.Count);
+                    int stripesCount = 2 + (Math.Abs(h) % maxPossibleColors);
+
+                    for (int i = 0; i < stripesCount; i++)
+                    {
+                        int width = (Math.Abs(h ^ (i * 137)) % 2) + 1;
+                        stripespattern.Add(width);
+                    }
+                    var stripesPattern = PatternHelper.Stripes(patternSize, new Point(0, 0), stripespattern, stripes);
+                    bodyPattern = stripesPattern;
+                    leftarmPattern = stripesPattern;
+                    rightarmPattern = stripesPattern;
+                }else if (materialCharacteristic == 3) //hawaii
+                {
+                    var colors = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
+                    .Take(Configuration.Colors.Count)
+                    .ToList();
+                    var hawaiiPattern = PatternHelper.Hawaii(patternSize, (int)Workspace.Characteristics.Hash, new Point(0, 0), colors);
+                    bodyPattern = hawaiiPattern;
+                    leftarmPattern = hawaiiPattern;
+                    rightarmPattern= hawaiiPattern;
                 }
             }
 
+            var fronttexture = ModuleHelper.ProcessTexturePart(Workspace.Texture.GetFullPart(TextureMapPart.BODY), Workspace.Characteristics, bodyPattern, ProcessMainBodyPart);
+            Workspace.Texture.SetFullPart(fronttexture, TextureMapPart.BODY);
 
+            var leftArmPart = ModuleHelper.ProcessTexturePart(Workspace.Texture.GetFullPart(TextureMapPart.LEFT_ARM), Workspace.Characteristics, leftarmPattern, ProcessArmBodyPart);
+            Workspace.Texture.SetFullPart(leftArmPart, TextureMapPart.LEFT_ARM);
+            var rightArmPart = ModuleHelper.ProcessTexturePart(Workspace.Texture.GetFullPart(TextureMapPart.RIGHT_ARM), Workspace.Characteristics, rightarmPattern, ProcessArmBodyPart);
+            Workspace.Texture.SetFullPart(rightArmPart, TextureMapPart.RIGHT_ARM);
 
-            var fronttexture = ProcessMainBody(textureMap, characteristics, bodyPattern);
-            textureMap.SetFullPart(fronttexture, TextureMapPart.BODY);
-
-            var leftArmPart = ProcessArmBody(textureMap, characteristics, leftarmPattern, TextureMapPart.LEFT_ARM);
-            textureMap.SetFullPart(leftArmPart, TextureMapPart.LEFT_ARM);
-            var rightArmPart = ProcessArmBody(textureMap, characteristics, rightarmPattern, TextureMapPart.RIGHT_ARM);
-            textureMap.SetFullPart(rightArmPart, TextureMapPart.RIGHT_ARM);
-
-
-            var imageFromtextureMap = textureMap.Texture.ToBase64String(PngFormat.Instance);
-
-            _texturemap = textureMap;
-            return textureMap;
+            return Workspace.Texture;
         }
-
-
-        public TextureMap GenerateAccessoryArea()
+        public TextureMap GenerateDetailsTexture()
         {
-            var characteristics = new OutfityTypeCharacteristics(_config.Seed);
+            var detailsCharacterists = Workspace.Characteristics.Details;
 
-            var bodyPart = _texturemap.GetPart(TextureMapPart.BODY).Clone();
-            var outerBodyPart = _texturemap.GetOuterPart(TextureMapPart.BODY).Clone();
-            var accessoriesColor = ColorHelper.GLOBAL_COLORS[TextureGlobalColor.Accessories];
-
-            var backArea = new Rectangle(17, 6, 6, 6);
-            using (var backPart = bodyPart.Clone(x => x.Crop(backArea)))
+            Workspace.DetailsTexture = new TextureMap
             {
-                var filledBack = TextureManupulationHelper.FillWithAltPallete(
-                    backPart,
-                    new Rectangle(0, 0, backPart.Width, backPart.Height),
-                    ColorHelper.GLOBAL_COLORS[TextureGlobalColor.Base],
-                    accessoriesColor);
+                Texture = new Image<Rgba32>(Workspace.Texture.Texture.Width, Workspace.Texture.Texture.Height)
+            };
 
-                bodyPart.Mutate(x => x.DrawImage(filledBack, backArea.Location, 1f));
+            var bodyPart = Workspace.Texture.GetPart(TextureMapPart.BODY).Clone();
+            using var targetBodyPart = new Image<Rgba32>(bodyPart.Width, bodyPart.Height);
 
-                _accessoriesLocations.Add(new OutfitAccessoryLocation
-                {
-                    Location = backArea,
-                    Type = OutfitAccessory.IMAGES
-                });
+            if (detailsCharacterists % 2 == 1)
+            {
+                var bottomOutline = TextureManupulationHelper.DetectOutline(bodyPart, false, true, false, false, 1, false);
+                TextureManupulationHelper.CopyRectangles(targetBodyPart, bodyPart, bottomOutline);
             }
 
-            var colors = ColorHelper.ExtractAndSortColorsByLuminance(bodyPart);
-            var accessoryPallete = ColorHelper.GetColorsFromPallete(colors, accessoriesColor);
-            var frontBorderPallete = ColorHelper.GetColorsFromPallete(colors, ColorHelper.GLOBAL_COLORS[TextureGlobalColor.FrontOutline]);
+            if (detailsCharacterists % 3 == 1)
+            {
+                var frontRect = new Rectangle(4, 4, 8, 12);
+                using var frontPart = bodyPart.Clone(x => x.Crop(frontRect));
+                var frontOutline = TextureManupulationHelper.DetectOutline(frontPart, false, false, true, true, 1, true);
 
-            var frontLengthCharacteristic = (characteristics.Length / 10) % 4;
+                using var tempFrontTarget = new Image<Rgba32>(frontRect.Width, frontRect.Height);
+                TextureManupulationHelper.CopyRectangles(tempFrontTarget, frontPart, frontOutline);
+
+                targetBodyPart.Mutate(x => x.DrawImage(tempFrontTarget, new Point(frontRect.X, frontRect.Y), 1f));
+            }
+
+            Workspace.DetailsTexture.SetOuterPart(TextureMapPart.BODY, targetBodyPart);
+
+            if (detailsCharacterists % 2 == 1)
+            {
+                var leftArmOuterPart = Workspace.Texture.GetOuterPart(TextureMapPart.LEFT_ARM).Clone();
+                var rightArmOuterPart = Workspace.Texture.GetOuterPart(TextureMapPart.RIGHT_ARM).Clone();
+
+                Workspace.DetailsTexture.SetOuterPart(TextureMapPart.LEFT_ARM, leftArmOuterPart);
+                Workspace.DetailsTexture.SetOuterPart(TextureMapPart.RIGHT_ARM, rightArmOuterPart);
+            }
+            return Workspace.DetailsTexture;
+
+        }
+        public TextureMap GenerateAccessories()
+        {
+            var appliedAccTextureMap = new TextureMap()
+            {
+                Texture = new Image<Rgba32>(Workspace.Texture.Texture.Width, Workspace.Texture.Texture.Height)
+            };
+
+            var accessoryCharacteristics = Workspace.Characteristics.BaseDecoration;
+            var locations = AccessoriesHelper.GetLocationsForConfig(Workspace.AccessoryLocations, Configuration,Workspace.Characteristics.BaseDecoration);
+
+
+            var originalBody = Workspace.Texture.GetPart(TextureMapPart.BODY);
+            var bodypart = new Image<Rgba32>(originalBody.Width, originalBody.Height);
+
+            var dominantColor = ColorHelper.GetDominant(Workspace.Texture.Texture);
+            var pallete = ColorHelper.GetPallete(dominantColor, Workspace.UserPallets);
+            var contrastColor = ColorHelper.GetContrast(pallete.BaseColor, Workspace.UserPallets.Select(x => x.BaseColor).ToList());
+            var contractPallete = ColorHelper.GetPallete(contrastColor, Workspace.UserPallets);
+
+            bodypart.Mutate(ctx =>
+            {
+                foreach (var location in locations)
+                {
+                    var accessoryItems = AccessoriesHelper.GetAccessoriesForLocation(location);
+                    if (accessoryItems.Count == 0) continue;
+
+
+                    var selectedAccessory = accessoryItems[accessoryCharacteristics % accessoryItems.Count];
+
+                    var accessoryTexture = AccessoriesHelper.LoadAccessory(selectedAccessory);
+                    if (selectedAccessory.IsReadyForColor)
+                    {
+                        accessoryTexture = AccessoriesHelper.PaintAccessory(accessoryTexture, contractPallete);
+                    }
+
+
+                    ctx.DrawImage(accessoryTexture, location.Location.Location, (PixelColorBlendingMode)PixelAlphaCompositionMode.SrcOver, 1f);
+                }
+            });
+            var texture = bodypart.ToBase64String(PngFormat.Instance);
+            appliedAccTextureMap.SetPart(TextureMapPart.BODY, bodypart);
+
+            Workspace.AccessoryTexture = appliedAccTextureMap;
+            return Workspace.AccessoryTexture;
+        }
+        public TextureMap GenerateAccessoryTexture()
+        {
+            Workspace.AccessoryTexture = new TextureMap
+            {
+                Texture = new Image<Rgba32>(Workspace.Texture.Texture.Width, Workspace.Texture.Texture.Height),
+            };
+            var bodypart = Workspace.Texture.GetPart(TextureMapPart.BODY).Clone();
+            var backArea = new Rectangle(17, 6, 6, 6);
+
+            var targetBodyPart = Workspace.AccessoryTexture.GetPart(TextureMapPart.BODY);
+
+            targetBodyPart = TextureManupulationHelper.CopyRectangles(targetBodyPart, bodypart, new List<Rectangle> { backArea });
+            Workspace.AccessoryLocations.Add(new OutfitAccessoryLocation
+            {
+                Location = backArea,
+                Type = OutfitAccessory.IMAGES
+            });
+
+            var frontLengthCharacteristic = Workspace.Characteristics.Length % 4;
             if (frontLengthCharacteristic == 1)
                 frontLengthCharacteristic = 0;
 
             if (frontLengthCharacteristic > 0)
             {
-                var frontRect = new Rectangle(4, 0, 4, 16);
-                using (var frontPart = bodyPart.Clone(x => x.Crop(frontRect)))
+                //front accessory area
+                var frontRect = new Rectangle(4, 4, 8, 12);
+                var frontArea = bodypart.Clone(x => x.Crop(frontRect));
+                var targetFrontArea = targetBodyPart.Clone(x => x.Crop(frontRect));
+
+                var frontOutline = TextureManupulationHelper.DetectOutline(frontArea, false, false, false, true, 1, true);
+                var frontOutlinePart = TextureManupulationHelper.CopyRectangles(targetFrontArea, frontArea, frontOutline);
+                targetBodyPart.Mutate(x => x.DrawImage(frontOutlinePart, frontRect.Location, 1f));
+                Workspace.AccessoryLocations.Add(new OutfitAccessoryLocation
                 {
-                    var processedFront = TextureManupulationHelper.CopyOnlyWithPallete(frontPart, frontBorderPallete);
-
-                    processedFront = TextureManupulationHelper.FillWithAltPallete(
-                        processedFront,
-                        new Rectangle(0, 0, frontRect.Width, frontRect.Height),
-                        ColorHelper.GLOBAL_COLORS[TextureGlobalColor.FrontOutline],
-                        accessoriesColor);
-
-                    outerBodyPart.Mutate(x => x.DrawImage(processedFront, frontRect.Location, 1f));
-                }
+                    Location = frontRect,
+                    Type = OutfitAccessory.BUTTONS
+                });
             }
             else
             {
-                var frontRect = new Rectangle(5, 7, 6, 6);
-                using (var frontPart = bodyPart.Clone(x => x.Crop(frontRect)))
+                var frontArea = new Rectangle(5, 8, 6, 6);
+
+                targetBodyPart = TextureManupulationHelper.CopyRectangles(targetBodyPart, bodypart, new List<Rectangle> { frontArea });
+                Workspace.AccessoryLocations.Add(new OutfitAccessoryLocation
                 {
-                    var filledFront = TextureManupulationHelper.FillWithAltPallete(
-                        frontPart,
-                        new Rectangle(0, 0, frontPart.Width, frontPart.Height),
-                        ColorHelper.GLOBAL_COLORS[TextureGlobalColor.Base],
-                        accessoriesColor);
-                    bodyPart.Mutate(x => x.DrawImage(filledFront, frontRect.Location, 1f));
-
-                    _accessoriesLocations.Add(new OutfitAccessoryLocation
-                    {
-                        Location = frontRect,
-                        Type = OutfitAccessory.IMAGES
-                    });
-                }
+                    Location = frontArea,
+                    Type = OutfitAccessory.IMAGES
+                });
             }
+            Workspace.AccessoryTexture.SetPart(TextureMapPart.BODY, targetBodyPart);
 
-            var finalOuterBodyPart = TextureManupulationHelper.CopyOnlyWithPallete(outerBodyPart, accessoryPallete);
-            var finalBodyPart = TextureManupulationHelper.CopyOnlyWithPallete(bodyPart, accessoryPallete);
 
-            _accessoriestexturemap = new TextureMap
-            {
-                Texture = new Image<Rgba32>(_texturemap.Texture.Width, _texturemap.Texture.Height),
-            };
-            _accessoriestexturemap.SetPart(TextureMapPart.BODY, finalBodyPart);
-            _accessoriestexturemap.SetOuterPart(TextureMapPart.BODY, finalOuterBodyPart);
-            return _accessoriestexturemap;
-        }
-        public TextureMap GenerateAccessoryTexture()
-        {
-            var characteristics = new OutfityTypeCharacteristics(_config.Seed);
-            
-            var location = _accessoriesLocations.Last();
-
-            var acc = AccessoriesHelper.GetAccessoriesForLocation(location);
-            var test = AccessoriesHelper.ApplyConfigurationToAccessory(acc[0], _config);
-
-            var frontpart = _texturemap.GetPart(TextureMapPart.BODY).Clone();
-            var gfxOptions = new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.SrcOver };
-            frontpart.Mutate(x => x.DrawImage(test,new Point(location.Location.X,location.Location.Y), gfxOptions));
-            _texturemap.SetPart(TextureMapPart.BODY, frontpart);
-            return _texturemap;
+            return Workspace.AccessoryTexture;
         }
         public TextureMap GenerateColoredTexture()
         {
-            var characteristics = new OutfityTypeCharacteristics(_config.Seed);
-            var pallets = new List<List<Rgba32>>();
-            foreach (var color in _config.Colors)
-            {
-                pallets.Add(ColorHelper.GenerateDefaultPallete(color));
-            }
-            var maxColors = pallets.Max(p => p.Count);
-
-            //apply colors to the texturemap
-            var texture = _texturemap.Texture.Clone();
-            var colors = ColorHelper.ExtractAndSortColorsByLuminance(texture);
-            var expandedpallete = ColorHelper.ExpandToGlobalPallets(colors, maxColors);
-            //replace colors in the texture with the generated pallete
-            texture.ProcessPixelRows(accessor =>
+            Workspace.Texture.Texture.ProcessPixelRows(accessor =>
             {
                 for (int y = 0; y < accessor.Height; y++)
                 {
                     var row = accessor.GetRowSpan(y);
                     for (int x = 0; x < row.Length; x++)
                     {
-                        var currentColor = row[x];
-                        if (currentColor.A == 0)
+                        var color = row[x];
+                        if (color.A == 0)
                             continue;
-                        var maxColors = characteristics.Material % pallets.Count + 1;
-                        var colorIndex = expandedpallete[TextureGlobalColor.Base].Colors.IndexOf(currentColor);
-                        if (colorIndex > -1)
-                        {
-                            var pallete = pallets[0];
-                            row[x] = pallete[Math.Min(colorIndex, pallete.Count - 1)];
-                            continue;
-                        }
-
-                        colorIndex = expandedpallete[TextureGlobalColor.FrontOutline].Colors.IndexOf(currentColor);
-                        if (colorIndex > -1)
-                        {
-                            var palleteIndex = pallets.Count > 1 ? 1 : 0;
-                            if (maxColors < 1)
-                                palleteIndex = maxColors;
-                            var pallete = pallets[palleteIndex];
-                            row[x] = pallete[Math.Min(colorIndex, pallete.Count - 1)];
-                            continue;
-                        }
-
-                        colorIndex = expandedpallete[TextureGlobalColor.BottomOutline].Colors.IndexOf(currentColor);
-
-                        if (colorIndex > -1)
-                        {
-                            var palleteIndex = pallets.Count > 2 ? 2 : 1;
-                            if (maxColors < 2)
-                                palleteIndex = 0;
-                            var pallete = pallets[palleteIndex];
-                            row[x] = pallete[Math.Min(colorIndex, pallete.Count - 1)];
-                            continue;
-                        }
+                        row[x] = ColorHelper.MapColor(color, Workspace.UserPallets);
                     }
                 }
             });
-            _texturemap.Texture = texture;
-            return _texturemap;
-        }
-        private TextureMapFullPart ProcessMainBody(TextureMap source, OutfityTypeCharacteristics characteristics, Image<Rgba32> pattern)
-        {
-            var processedpart = ModuleHelper.ProcessTexturePart(source.GetFullPart(TextureMapPart.BODY), characteristics, pattern, ProcessMainBodyPart, ProcessMainBodyOuterPart);
-
-            source.SetFullPart(processedpart, TextureMapPart.BODY);
-            return processedpart;
-        }
-        private TextureMapFullPart ProcessArmBody(TextureMap source, OutfityTypeCharacteristics characteristics, Image<Rgba32> pattern, TextureMapPart part)
-        {
-            var processedpart = ModuleHelper.ProcessTexturePart(source.GetFullPart(part), characteristics, pattern, ProcessArmBodyPart, ProcessArmBodyOuterPart);
-            source.SetFullPart(processedpart, part);
-            return processedpart;
-        }
-        private Image<Rgba32> ProcessMainBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> pattern, Image<Rgba32> part)
-        {
-            if (pattern != null)
+            //paint on details texture
+            var contrastColor = ColorHelper.GetContrast(Workspace.UserPallets[0].BaseColor, Workspace.UserPallets.Select(x => x.BaseColor).ToList());
+            var contractPallete = ColorHelper.GetPallete(contrastColor, Workspace.UserPallets);
+            Workspace.DetailsTexture.Texture.ProcessPixelRows(accessor =>
             {
-                part = TextureManupulationHelper.DrawOnVisible(part, pattern);
-            }
-            var colors = ColorHelper.ExtractAndSortColorsByLuminance(part);
-            var bottomOutlines = TextureManupulationHelper.DetectOutline(part, false, true, false, false, 1);
+                for (int y = 0; y < accessor.Height; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (int x = 0; x < row.Length; x++)
+                    {
+                        var color = row[x];
+                        if (color.A == 0)
+                            continue;
+                        row[x] = ColorHelper.MapToPallete(color, contractPallete);
+                    }
+                }
+            });
 
-            var frontLengthCharacteristic = (characteristics.Length / 10) % 4;
+            return Workspace.Texture;
+        }
+        private TextureMapFullPart ProcessMainBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart)
+        {
+            var frontLengthCharacteristic = characteristics.Length % 4;
             if (frontLengthCharacteristic == 1)
                 frontLengthCharacteristic = 0;
 
@@ -281,26 +285,22 @@ namespace minecreator.api.Modules
                 exludedPoints.Add(new Point(8 - spreadBase / 2, 15));
                 exludedPoints.Add(new Point(7 + spreadBase / 2, 15));
             }
-            foreach (var b in bottomOutlines)
-            {
-                //remove inner corner from outline
-                part = TextureManupulationHelper.FillWithAltPallete(part, b, ColorHelper.GLOBAL_COLORS[TextureGlobalColor.Base], ColorHelper.GLOBAL_COLORS[TextureGlobalColor.BottomOutline], exludedPoints);
-            }
             if (frontLengthCharacteristic > 0)
             {
-
                 var frontpart = part.Clone();
                 frontpart.Mutate(x => x.Crop(new Rectangle(4, 0, 8, 16)));
-
+                var frontOuterPart = outerPart.Clone();
+                frontOuterPart.Mutate(x => x.Crop(new Rectangle(4, 0, 8, 16)));
                 var centerPixelX = frontpart.Width / 2;
 
-                frontpart.ProcessPixelRows(accessor =>
+                frontpart.ProcessPixelRows(frontOuterPart, (accessor, outerAccessor) =>
                 {
                     for (int y = 0; y < accessor.Height; y++)
                     {
                         var row = accessor.GetRowSpan(y);
-                        var spread = (y <= 4 && spreadBase == 4) ? spreadBase + 2 : spreadBase;
+                        var outerRow = outerAccessor.GetRowSpan(y);
 
+                        var spread = (y <= 4 && spreadBase == 4) ? spreadBase + 2 : spreadBase;
                         var startX = Math.Max(0, centerPixelX - spread / 2);
                         var endX = Math.Min(frontpart.Width, centerPixelX + spread / 2);
 
@@ -309,92 +309,55 @@ namespace minecreator.api.Modules
                             if (x == startX || x == endX - 1)
                             {
 
-                                var color = row[x];
-                                var brighter = ColorHelper.GetBrighter(colors, color);
-
                                 if (((characteristics.Material / 10) % 3) != 1)
                                 {
+                                    var color = row[x];
+                                    var pallete = ColorHelper.GetPallete(color);
+                                    var brighter = ColorHelper.GetBrighter(pallete, color);
                                     row[x] = brighter;
+                                    if (y >= 4)
+                                        outerRow[x] = brighter;
                                 }
                             }
                             else
                             {
                                 row[x] = new Rgba32(0, 0, 0, 0);
+                                outerRow[x] = new Rgba32(0, 0, 0, 0);
                             }
                         }
                     }
                 });
-                var onlyfront = frontpart.Clone();
-                onlyfront.Mutate(x => x.Crop(new Rectangle(0, 4, 8, 12)));
-
-                var frontOulines = TextureManupulationHelper.DetectOutline(onlyfront, false, false, true, true, 1, true);
-                foreach (var rect in frontOulines)
-                {
-                    var newRect = new Rectangle(rect.X, rect.Y + 4, rect.Width, rect.Height);
-                    frontpart = TextureManupulationHelper.FillWithAltPallete(frontpart, newRect, ColorHelper.GLOBAL_COLORS[TextureGlobalColor.Base], ColorHelper.GLOBAL_COLORS[TextureGlobalColor.FrontOutline]);
-                }
 
                 var gfxOptions = new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.Src };
                 part.Mutate(x => x.DrawImage(frontpart, new Point(4, 0), gfxOptions));
+                outerPart.Mutate(x => x.DrawImage(frontOuterPart, new Point(4, 0), gfxOptions));
+
             }
-            return part;
+
+            return new TextureMapFullPart { Part = part, OuterPart = outerPart };
         }
-        private Image<Rgba32> ProcessMainBodyOuterPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> pattern, Image<Rgba32> outerPart, Image<Rgba32> innerPart)
+        private TextureMapFullPart ProcessArmBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart)
         {
-
-            var frontpart = outerPart.Clone();
-            frontpart.Mutate(x => x.Crop(new Rectangle(4, 4, 8, 12)));
-
-            var innerFrontPart = innerPart.Clone();
-            innerFrontPart.Mutate(x => x.Crop(new Rectangle(4, 4, 8, 12)));
-
-            var colors = ColorHelper.ExtractAndSortColorsByLuminance(innerPart);
-            var frontBorderPallete = ColorHelper.GetColorsFromPallete(colors, ColorHelper.GLOBAL_COLORS[TextureGlobalColor.FrontOutline]);
-
-            frontpart = TextureManupulationHelper.CopyOnlyWithPallete(innerPart, frontBorderPallete);
-
-            var gfxOptions = new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.Src };
-            outerPart.Mutate(x => x.DrawImage(frontpart, new Point(0, 0), gfxOptions));
-            return outerPart;
-        }
-        private Image<Rgba32> ProcessArmBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> pattern, Image<Rgba32> part)
-        {
-            if (pattern != null)
-            {
-                part = TextureManupulationHelper.DrawOnVisible(part, pattern);
-            }
-            var overallOffset = 0;
             var armLength = characteristics.Length % 5;
+            var images = new[] { part, outerPart };
             for (int step = 1; step <= armLength; step++)
             {
                 int height = (step == 2 || step == 3) ? 4 : 3;
                 int yOffset = 11 - step + (3 - height);
-                overallOffset = yOffset + Math.Abs(3 - height);
 
-                part = TextureManupulationHelper.MoveByVector(part, new Rectangle(0, yOffset, 16, height), new Point(0, -1));
+                foreach (var img in images)
+                    TextureManupulationHelper.MoveByVector(img, new Rectangle(0, yOffset, 16, height), new Point(0, -1));
+            }
 
-            }
-            var armOutline = TextureManupulationHelper.DetectOutline(part, false, true, false, false, 2 - (characteristics.Material % 2));
-            foreach (var arm in armOutline)
-            {
-                part = TextureManupulationHelper.FillWithAltPallete(part, arm, ColorHelper.GLOBAL_COLORS[TextureGlobalColor.Base], ColorHelper.GLOBAL_COLORS[TextureGlobalColor.BottomOutline]);
-            }
-            return part;
-        }
-        public Image<Rgba32> ProcessArmBodyOuterPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> pattern, Image<Rgba32> part, Image<Rgba32> innerpart)
-        {
-            var armLength = characteristics.Length % 5;
             if (armLength > 1)
             {
-                var materialFinish = innerpart.Clone();
-                var imagetest = materialFinish.ToBase64String(PngFormat.Instance);
-                var isSlimmer = characteristics.Material % 2;
-                materialFinish.Mutate(x => x.Crop(new Rectangle(0, 11 - armLength + isSlimmer, 16, 2 - isSlimmer)));
-                var gfxOptions = new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.Src };
-                part.Mutate(x => x.DrawImage(materialFinish, new Point(0, 11 - armLength + isSlimmer), gfxOptions));
-            }
-            return part;
-        }
+                int isSlimmer = (int)(characteristics.Material % 2);
+                var rect = new Rectangle(0, 11 - armLength + isSlimmer, 16, 2 - isSlimmer);
 
+                outerPart.Mutate(x => x.DrawImage(part.Clone(ctx => ctx.Crop(rect)), rect.Location, 1f));
+            }
+
+            return new TextureMapFullPart { Part = part, OuterPart = outerPart };
+        }
     }
 }

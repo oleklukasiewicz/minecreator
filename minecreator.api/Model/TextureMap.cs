@@ -1,4 +1,5 @@
 ﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
@@ -129,6 +130,10 @@ namespace minecreator.api.Model
                 BlendPercentage = 1f
             }));
 
+        }
+        public string ToBase64()
+        {
+            return Texture.ToBase64String(PngFormat.Instance);
         }
         public Image<Rgba32> Texture
         {
