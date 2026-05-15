@@ -25,6 +25,7 @@ namespace minecreator.api.Helpers
     public static class ColorHelper
     {
         private static int _palleteColorCount = 5;
+        private static int _maxPalletsCount = 5;
         public static List<ColorPallete> COLORS_PALLETE { get; private set; } = new List<ColorPallete>();
 
         public static ColorPallete DEFAULT_PALLETE
@@ -32,13 +33,17 @@ namespace minecreator.api.Helpers
             get => COLORS_PALLETE.Where(x => x.BaseColor.R == x.BaseColor.G && x.BaseColor.R == x.BaseColor.B).FirstOrDefault();
         }
         public static int PalleteColorSize => _palleteColorCount;
-        public static void Init()
+        public static int MaxPalletsCount => _maxPalletsCount;
+        public static void Init(int palletesize=5,int maxPalletsCount=5)
         {
+            _palleteColorCount = palletesize;
+            _maxPalletsCount = maxPalletsCount;
+
             int[] colorValue = new int[]
             {
                 128,96
             };
-            int maxPalletsCount = 5;
+            
 
             var mutations = new List<Rgba32>();
 
@@ -55,7 +60,7 @@ namespace minecreator.api.Helpers
                             continue;
                         }
                         mutations.Add(new Rgba32((byte)r, (byte)g, (byte)b, 255));
-                        if (mutations.Count >= (maxPalletsCount - 2))
+                        if (mutations.Count >= (_maxPalletsCount - 2))
                         {
                             break;
                         }

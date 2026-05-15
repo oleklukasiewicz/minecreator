@@ -12,11 +12,13 @@ namespace minecreator.api.Modules
 {
     public class TopOutfitTypeModule : OutfitModule
     {
-        public TopOutfitTypeModule(OutfitConfiguration config)
+        public override OutfitType OutfitType => OutfitType.TOP;
+
+        public TopOutfitTypeModule()
         {
-            SetConfiguration(config);
+            Options.Accessory = new List<OutfitAccessory> { OutfitAccessory.BUTTONS, OutfitAccessory.IMAGES };
         }
-        public TextureMap GenerateBaseTexture()
+        public override TextureMap GenerateBaseTexture()
         {
             Workspace.Texture.CopyParts(Workspace.BaseTexture, new List<TextureMapPart>
             { TextureMapPart.BODY, TextureMapPart.LEFT_ARM, TextureMapPart.RIGHT_ARM });
@@ -72,7 +74,8 @@ namespace minecreator.api.Modules
                     bodyPattern = stripesPattern;
                     leftarmPattern = stripesPattern;
                     rightarmPattern = stripesPattern;
-                }else if (materialCharacteristic == 3) //hawaii
+                }
+                else if (materialCharacteristic == 3) //hawaii
                 {
                     var colors = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
                     .Take(Configuration.Colors.Count)
@@ -80,7 +83,7 @@ namespace minecreator.api.Modules
                     var hawaiiPattern = PatternHelper.Hawaii(patternSize, (int)Workspace.Characteristics.Hash, new Point(0, 0), colors);
                     bodyPattern = hawaiiPattern;
                     leftarmPattern = hawaiiPattern;
-                    rightarmPattern= hawaiiPattern;
+                    rightarmPattern = hawaiiPattern;
                 }
             }
 
@@ -94,7 +97,7 @@ namespace minecreator.api.Modules
 
             return Workspace.Texture;
         }
-        public TextureMap GenerateDetailsTexture()
+        public override TextureMap GenerateDetailsTexture()
         {
             var detailsCharacterists = Workspace.Characteristics.Details;
 
@@ -137,7 +140,7 @@ namespace minecreator.api.Modules
             return Workspace.DetailsTexture;
 
         }
-        public TextureMap GenerateAccessories()
+        public override TextureMap GenerateAccessories()
         {
             var appliedAccTextureMap = new TextureMap()
             {
@@ -145,7 +148,7 @@ namespace minecreator.api.Modules
             };
 
             var accessoryCharacteristics = Workspace.Characteristics.BaseDecoration;
-            var locations = AccessoriesHelper.GetLocationsForConfig(Workspace.AccessoryLocations, Configuration,Workspace.Characteristics.BaseDecoration);
+            var locations = AccessoriesHelper.GetLocationsForConfig(Workspace.AccessoryLocations, Configuration, Workspace.Characteristics.BaseDecoration);
 
 
             var originalBody = Workspace.Texture.GetPart(TextureMapPart.BODY);
@@ -182,7 +185,7 @@ namespace minecreator.api.Modules
             Workspace.AccessoryTexture = appliedAccTextureMap;
             return Workspace.AccessoryTexture;
         }
-        public TextureMap GenerateAccessoryTexture()
+        public override TextureMap GenerateAccessoryTexture()
         {
             Workspace.AccessoryTexture = new TextureMap
             {
@@ -236,7 +239,7 @@ namespace minecreator.api.Modules
 
             return Workspace.AccessoryTexture;
         }
-        public TextureMap GenerateColoredTexture()
+        public override TextureMap GenerateColoredTexture()
         {
             Workspace.Texture.Texture.ProcessPixelRows(accessor =>
             {

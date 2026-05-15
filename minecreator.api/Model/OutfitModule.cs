@@ -5,41 +5,32 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace minecreator.api.Model
 {
-    public class OutfitModule : IOutfitModule
+    public abstract class OutfitModule : IOutfitModule
     {
+        public abstract OutfitType OutfitType { get; }
         public OutfitConfiguration Configuration { get; set; }
         public OutfitModuleWorkspace Workspace { get; set; }
+        public OutfitModuleOptions Options { get; set; } = new OutfitModuleOptions();
 
-        public TextureMap GenerateAccessories()
-        {
-            throw new NotImplementedException();
-        }
+        public abstract TextureMap GenerateAccessories();
 
-        public TextureMap GenerateAccessoryTexture()
-        {
-            throw new NotImplementedException();
-        }
+        public abstract TextureMap GenerateAccessoryTexture();
 
-        public TextureMap GenerateBaseTexture()
-        {
-            throw new NotImplementedException();
-        }
+        public abstract TextureMap GenerateBaseTexture();
 
-        public TextureMap GenerateColoredTexture()
-        {
-            throw new NotImplementedException();
-        }
+        public abstract TextureMap GenerateColoredTexture();
 
-        public TextureMap GenerateDetailsTexture()
+        public abstract TextureMap GenerateDetailsTexture();
+        public OutfitModuleOptions GetOptions()
         {
-            throw new NotImplementedException();
+            return Options;
         }
 
         public TextureMap MergeTextures(bool details, bool accessories)
         {
             if (details)
             {
-                Workspace.Texture.Texture = TextureManupulationHelper.Merge(Workspace.Texture.Texture, Workspace.DetailsTexture.Texture);               
+                Workspace.Texture.Texture = TextureManupulationHelper.Merge(Workspace.Texture.Texture, Workspace.DetailsTexture.Texture);
             }
             if (accessories)
             {
@@ -65,7 +56,7 @@ namespace minecreator.api.Model
                     Colors = pallete
                 });
             }
-            
+
             Workspace.UserPallets = userColorsPallets;
             return true;
         }
@@ -78,6 +69,12 @@ namespace minecreator.api.Model
         public TextureMap AccessoryTexture { get; set; } = new TextureMap();
         public List<OutfitAccessoryLocation> AccessoryLocations { get; set; } = new List<OutfitAccessoryLocation>();
         public OutfityTypeCharacteristics Characteristics { get; set; }
-        public List<ColorPallete> UserPallets { get; set; } 
+        public List<ColorPallete> UserPallets { get; set; }
+    }
+    public class OutfitModuleOptions
+    {
+        public List<OutfitAccessory> Accessory { get; set; } = new List<OutfitAccessory>();
+        public List<OutfitStyle> Styles { get; set; } = new List<OutfitStyle> { OutfitStyle.CASUAL };
+
     }
 }

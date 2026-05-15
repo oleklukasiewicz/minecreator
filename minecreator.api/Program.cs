@@ -1,11 +1,11 @@
 using minecreator.api.Helpers;
+using minecreator.api.Services;
 
 
-
-ColorHelper.Init();
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddTransient<IModuleService, ModuleService>();
+builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

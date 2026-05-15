@@ -17,6 +17,8 @@
 		"@sveltejs/adapter-node": "^5.5.2",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@types/node": "^25.8.0",
+		"@types/three": "^0.184.1",
 		"@vitest/browser-playwright": "^4.1.0",
 		"playwright": "^1.58.2",
 		"svelte": "^5.54.0",
@@ -29,6 +31,8 @@
 	"dependencies": {
 		"sass": "^1.98.0",
 		"svelte-i18n": "^4.0.1",
-		"svelte-writable-derived": "^3.1.1"
+		"svelte-intersection-observer": "^1.1.1",
+		"svelte-writable-derived": "^3.1.1",
+		"three": "^0.184.0"
 	}
 }

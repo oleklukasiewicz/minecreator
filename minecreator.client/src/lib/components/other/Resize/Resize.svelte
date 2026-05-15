@@ -12,7 +12,7 @@
     onresize?: () => void;
   } = $props();
 
-  let timeout: number | undefined;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
   let resizeObserver: ResizeObserver | null = null;
   let _targetNode: Element | null = null;
   let initialized = false;
@@ -31,7 +31,7 @@
     }
   });
   onDestroy(() => {
-    clearTimeout(timeout);
+    if (timeout) clearTimeout(timeout);
     if (_targetNode) {
       resizeObserver?.unobserve(_targetNode);
     }
@@ -44,7 +44,7 @@
   function observe() {
     if (!resizeObserver)
       resizeObserver = new ResizeObserver(() => {
-        clearTimeout(timeout);
+        if (timeout) clearTimeout(timeout);
         if (!initialized) {
           initialized = true;
           return;
@@ -62,7 +62,7 @@
 
     return {
       destroy() {
-        clearTimeout(timeout);
+        if (timeout) clearTimeout(timeout);
         if (_targetNode) {
           resizeObserver?.unobserve(_targetNode);
         }
