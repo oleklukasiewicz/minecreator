@@ -29,6 +29,7 @@
 		"vitest-browser-svelte": "^2.0.2"
 	},
 	"dependencies": {
+		"axios": "^1.5.0",
 		"sass": "^1.98.0",
 		"svelte-i18n": "^4.0.1",
 		"svelte-intersection-observer": "^1.1.1",

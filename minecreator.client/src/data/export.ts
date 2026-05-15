@@ -1,7 +1,7 @@
 import type { Outfit } from "./outfit";
 
-export const ExportConfig = async function (data: Outfit[]): Promise<void> {
-  const json = JSON.stringify(data, null, 2);
+export const ExportConfig = async function (data: Outfit[], model: string): Promise<void> {
+  const json = JSON.stringify({ model: model, outfits: data.map((o) => o.ToExportModel()) }, null, 2);
   const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
