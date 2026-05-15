@@ -14,6 +14,15 @@ export const SKIN_MODEL = [
   new ValueData("slim", "Slim"),
 ];
 
+export enum OUTFIT_TYPE {
+  SUIT = "suit",
+  SHOES = "shoes",
+  BOTTOM = "bottom",
+  HAT = "hat",
+  TOP = "top",
+  HOODIE = "hoodie",
+}
+
 type OutfitLike = Partial<Outfit>;
 
 const isEnumValue = <T extends string>(

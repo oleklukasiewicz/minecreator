@@ -17,7 +17,10 @@
   import ExportIcon from "$icons/upload.svg?raw";
   import GenerateIcon from "$icons/zap.svg?raw";
   import Dialog from "$lib/components/base/Dialog/Dialog.svelte";
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
+  import OutfitPackageRender from "$lib/components/render/OutfitPackageRender.svelte";
+  import { MODEL_TYPE } from "$src/data/enums/model";
+  import DefaultAnimation from "$src/animation/default";
   import { GenerateOutfits, GetConfiguration } from "$src/data/api";
   import { Configuration } from "$src/data/config";
 
@@ -119,6 +122,9 @@
     currentLocale = payload.item.value;
     setAppLocale(payload.item.value);
   };
+  let previewComponent = $state<any>(null);
+  let generatedOutfits = $state<string>("");
+
   const generateOutfits = async function () {
     const json = JSON.stringify(
       {
@@ -130,7 +136,11 @@
     );
 
     var generated = await GenerateOutfits(json);
-    console.log(generated);
+    generatedOutfits = "data:image/png;base64," + generated;
+    await tick();
+    if (previewComponent && typeof previewComponent.addAnimation === "function") {
+      previewComponent.addAnimation(DefaultAnimation);
+    }
   };
 
   $effect(() => {
@@ -245,6 +255,14 @@
                   onUpdate={updateSelectedOutfit}
                   {configuration}
                 />
+                {#if generatedOutfits.length > 0}
+                  <OutfitPackageRender
+                    source={generatedOutfits}
+                    model={MODEL_TYPE.STEVE}
+                    isDynamic
+                    bind:this={previewComponent}
+                  />
+                {/if}
               </Dialog>
             {:else}
               <OutfitPreview
@@ -252,6 +270,14 @@
                 onUpdate={updateSelectedOutfit}
                 {configuration}
               />
+              {#if generatedOutfits.length > 0}
+                <OutfitPackageRender
+                  source={generatedOutfits}
+                  model={MODEL_TYPE.STEVE}
+                  isDynamic
+                  bind:this={previewComponent}
+                />
+              {/if}
             {/if}
           </div>
         </div>

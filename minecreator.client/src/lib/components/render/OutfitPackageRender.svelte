@@ -30,7 +30,8 @@
   import { OUTFIT_TYPE } from "$src/data/outfit";
   type OutfitLayer = any;
   //icons
-  import floorTexture from "$texture/floor.webp?url";
+  import floorTexture from "$src/texture/floor.webp?url";
+  import baseSkin from "$src/texture/base_skin.webp?url";
 
   export const addAnimation = function (animation: RenderAnimation, force = false): void {
     if (textureRenderer == null) return;
@@ -172,7 +173,60 @@
       const options = CAMERA_CONFIG.getForOutfit(String(outfitType ?? ""));
       await textureRenderer.SetCameraOptions(options);
     }
-    if (cachedtexture != null) await textureRenderer.SetTextureAsync(cachedtexture);
+    if (cachedtexture != null) {
+      const base = typeof baseTexture === "string" ? (baseTexture as string) : baseSkin;
+      const finalTexture = await mergeWithBase(base, cachedtexture);
+      await textureRenderer.SetTextureAsync(finalTexture);
+    }
+  };
+
+  const mergeWithBase = async (baseUrl: string | null, overlay: string | null) => {
+    if (overlay == null) return null;
+    if (baseUrl == null) return overlay;
+    const Image = window.Image;
+    const baseImg = new Image();
+    const overImg = new Image();
+
+    const loaded = await new Promise<{ base: HTMLImageElement | null; over: HTMLImageElement | null }>((resolve) => {
+      let b: HTMLImageElement | null = null;
+      let o: HTMLImageElement | null = null;
+      baseImg.onload = () => {
+        b = baseImg;
+        if (o !== null) resolve({ base: b, over: o });
+      };
+      baseImg.onerror = () => {
+        b = null;
+        if (o !== null) resolve({ base: b, over: o });
+      };
+      overImg.onload = () => {
+        o = overImg;
+        if (b !== null) resolve({ base: b, over: o });
+      };
+      overImg.onerror = () => {
+        o = null;
+        if (b !== null) resolve({ base: b, over: o });
+      };
+      baseImg.src = baseUrl;
+      overImg.src = overlay;
+    });
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return overlay;
+
+    const bw = loaded.base?.width ?? loaded.over?.width ?? 64;
+    const bh = loaded.base?.height ?? loaded.over?.height ?? 64;
+    canvas.width = Math.max(bw, loaded.over?.width ?? 0);
+    canvas.height = Math.max(bh, loaded.over?.height ?? 0);
+
+    if (loaded.base) ctx.drawImage(loaded.base, 0, 0);
+    if (loaded.over) ctx.drawImage(loaded.over, 0, 0);
+
+    try {
+      return canvas.toDataURL();
+    } catch {
+      return overlay;
+    }
   };
   const setSource = async (
     v: string,
@@ -191,7 +245,11 @@
 
     await textureRenderer.SetCameraOptions(CAMERA_CONFIG.getForOutfit(String(outfitType ?? "")));
 
-    if (cachedtexture != null) await textureRenderer.SetTextureAsync(cachedtexture);
+    if (cachedtexture != null) {
+      const base = typeof baseTexture === "string" ? (baseTexture as string) : baseSkin;
+      const finalTexture = await mergeWithBase(base, cachedtexture);
+      await textureRenderer.SetTextureAsync(finalTexture);
+    }
     if (!isDynamic) await textureRenderer.RenderStatic();
     renderReady = true;
     onTextureUpdate();
@@ -363,10 +421,13 @@
     if (isDynamic) renderReady = true;
   };
   const onObserve = function (e: { detail: { isIntersecting: any; }; }) {
+    if (textureRenderer == null) return;
     if (pauseOnIntersection) {
       if (!e.detail.isIntersecting) textureRenderer.PauseRendering();
       else textureRenderer.ResumeRendering();
-    } else textureRenderer.ResumeRendering();
+    } else {
+      textureRenderer.ResumeRendering();
+    }
   };
 </script>
 

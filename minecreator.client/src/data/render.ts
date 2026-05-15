@@ -519,7 +519,7 @@ export class TextureRender {
   };
   AddTextureAmbientLighting = async (): Promise<TextureRender> => {
     const threeModule = await THREE.getThree();
-    const ambient = new threeModule.AmbientLight(0xffffff, 3.14);
+    const ambient = new threeModule.AmbientLight(0xffffff, 1.2);
     this.modelScene!.scene.add(ambient);
     this.ambientLight = ambient;
     return this;
