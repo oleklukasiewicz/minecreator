@@ -1,7 +1,4 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-
-namespace minecreator.api.Model.Interface
+﻿namespace minecreator.api.Model.Interface
 {
     public interface IOutfitModule
     {

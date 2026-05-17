@@ -1,6 +1,5 @@
 ﻿using minecreator.api.Model;
 using minecreator.api.Model.Interface;
-using minecreator.api.Modules;
 
 namespace minecreator.api.Services
 {
@@ -9,6 +8,7 @@ namespace minecreator.api.Services
         IOutfitModule GetModule(OutfitType type);
         Dictionary<OutfitType, OutfitModuleOptions> GetModulesOptions();
         void RegisterModule(OutfitType type, IOutfitModule module);
+        TextureMap GenerateTexture(OutfitConfiguration config);
     }
 
     public class ModuleService : IModuleService
@@ -44,6 +44,19 @@ namespace minecreator.api.Services
                 options[kvp.Key] = kvp.Value.GetOptions();
             }
             return options;
+        }
+        public TextureMap GenerateTexture(OutfitConfiguration config)
+        {
+            var module = GetModule(config.Type);
+            if (module == null) throw new Exception($"No module registered for outfit type {config.Type}");
+            module.SetConfiguration(config);
+            module.GenerateBaseTexture();
+            module.GenerateDetailsTexture();
+            module.GenerateAccessoryTexture();
+            module.GenerateColoredTexture();
+            module.GenerateAccessories();
+            var result = module.MergeTextures(true, true);
+            return result;
         }
     }
 }

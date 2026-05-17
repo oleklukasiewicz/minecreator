@@ -1,4 +1,5 @@
 ﻿using minecreator.api.Bases.Top.Casual;
+using minecreator.api.BaseTextures.Bottom.Casual;
 using minecreator.api.Model;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -11,10 +12,11 @@ namespace minecreator.api.Helpers
         {
             new ClassicTopCasualBaseTexture(),
             new SlimTopCasualBaseTexture(),
+            new BottomCasualBaseTexture()
         };
         public static TextureMap? LoadBaseTexture(OutfitStyle style, OutfitType type, OutfitModel model)
         {
-            var baseTexture = baseTextures.FirstOrDefault(bt => bt.Style == style && bt.Type == type && bt.Model == model);
+            var baseTexture = baseTextures.FirstOrDefault(bt => bt.Style == style && bt.Type == type && (bt.Model == model || bt.Model == OutfitModel.BOTH));
             if (baseTexture == null)
             {
                 return null;

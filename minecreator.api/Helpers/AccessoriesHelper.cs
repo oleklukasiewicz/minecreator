@@ -16,10 +16,6 @@ namespace minecreator.api.Helpers
         {
             new CreeperPatch()
         };
-        public static List<OutfitAccessoryItem> GetAccessoriesForOutfit(OutfitAccessory type)
-        {
-            return _accessories.Where(a => a.Type == type).ToList();
-        }
         public static List<OutfitAccessoryItem> GetAccessoriesForLocation(OutfitAccessoryLocation location)
         {
             return _accessories.Where(a => a.Type == location.Type && a.Size.X <= location.Location.Width && a.Size.Y <= location.Location.Height).ToList();
@@ -49,7 +45,7 @@ namespace minecreator.api.Helpers
             });
             return texture;
         }
-        public static List<OutfitAccessoryLocation> GetLocationsForConfig(List<OutfitAccessoryLocation> locations, OutfitConfiguration config,int seed)
+        public static List<OutfitAccessoryLocation> GetLocationsForConfig(List<OutfitAccessoryLocation> locations, OutfitConfiguration config, int seed)
         {
             var result = new List<OutfitAccessoryLocation>();
             var grouped = locations

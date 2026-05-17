@@ -1,7 +1,5 @@
 ﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace minecreator.api.Helpers
 {
@@ -143,11 +141,11 @@ namespace minecreator.api.Helpers
                             h ^= (h << 13); h ^= (h >> 17); h ^= (h << 5);
                             uint cellHash = (uint)Math.Abs(h);
 
-   
+
                             if ((cellHash % 100) < 98)
                             {
                                 int centerOffset = gridSize / 2;
-                                int jitterX = (int)(cellHash % 3) - 1; 
+                                int jitterX = (int)(cellHash % 3) - 1;
                                 int jitterY = (int)((cellHash / 3) % 3) - 1;
 
                                 int flowerX = currentCellX * gridSize + centerOffset + jitterX;

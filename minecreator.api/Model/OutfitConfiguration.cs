@@ -27,7 +27,8 @@ namespace minecreator.api.Model
     public enum OutfitModel
     {
         CLASSIC,
-        SLIM
+        SLIM,
+        BOTH
     }
 
     public class OutfitConfiguration

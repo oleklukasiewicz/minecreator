@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using minecreator.api.Helpers;
 using minecreator.api.Model;
 using minecreator.api.Services;
 using SixLabors.ImageSharp;
@@ -38,19 +37,10 @@ namespace minecreator.api.Controllers
             byte[] image = null;
             foreach (var item in list)
             {
-                var result = _moduleService.GetModule(item.Type);
-                result.SetConfiguration(item);
-                var module = result;
-                module.GenerateBaseTexture();
-                module.GenerateDetailsTexture();
-                module.GenerateAccessoryTexture();
-                module.GenerateColoredTexture();
-                module.GenerateAccessoryTexture();
-                module.GenerateAccessories();
-                var resultimage = module.MergeTextures(true, true);
-                
+                var result = _moduleService.GenerateTexture(item);
+
                 var stream = new MemoryStream();
-                resultimage.Texture.SaveAsPng(stream);
+                result.Texture.SaveAsPng(stream);
                 image = stream.ToArray();
             }
 

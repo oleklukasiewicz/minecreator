@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
-using System.Linq;
 using minecreator.api.Helpers;
 using SixLabors.ImageSharp.PixelFormats;
+using System.ComponentModel.DataAnnotations;
 
 namespace minecreator.api.Controllers
 {

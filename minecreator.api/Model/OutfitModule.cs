@@ -1,7 +1,5 @@
 ﻿using minecreator.api.Helpers;
 using minecreator.api.Model.Interface;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
 
 namespace minecreator.api.Model
 {

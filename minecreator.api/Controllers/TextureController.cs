@@ -1,12 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using minecreator.api.Helpers;
-using minecreator.api.Model;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using System.IO;
-using System;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace minecreator.api.Controllers
 {
@@ -35,8 +27,8 @@ namespace minecreator.api.Controllers
         //            Seed = seed,
         //            Accessories = new List<OutfitAccessory>
         //            {
-                      
-                      
+
+
         //            }
         //        };
 

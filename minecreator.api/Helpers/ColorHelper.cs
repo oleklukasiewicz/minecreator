@@ -34,7 +34,7 @@ namespace minecreator.api.Helpers
         }
         public static int PalleteColorSize => _palleteColorCount;
         public static int MaxPalletsCount => _maxPalletsCount;
-        public static void Init(int palletesize=5,int maxPalletsCount=5)
+        public static void Init(int palletesize = 5, int maxPalletsCount = 5)
         {
             _palleteColorCount = palletesize;
             _maxPalletsCount = maxPalletsCount;
@@ -43,7 +43,7 @@ namespace minecreator.api.Helpers
             {
                 128,96
             };
-            
+
 
             var mutations = new List<Rgba32>();
 

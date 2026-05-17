@@ -1,5 +1,4 @@
 ﻿using minecreator.api.Model;
-using minecreator.api.Model.Interface;
 
 namespace minecreator.api.Bases.Top.Casual
 {
