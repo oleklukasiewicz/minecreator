@@ -39,6 +39,8 @@ namespace minecreator.api.Controllers
             {
                 var result = _moduleService.GenerateTexture(item);
 
+                var texture = result.ToBase64();
+
                 var stream = new MemoryStream();
                 result.Texture.SaveAsPng(stream);
                 image = stream.ToArray();

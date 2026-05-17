@@ -228,5 +228,21 @@ namespace minecreator.api.Helpers
             }
             return targetImage;
         }
+        public static Image<Rgba32> CopyVisibleFromPattern(Image<Rgba32> targetImage, Image<Rgba32> source, Image<Rgba32> pattern)
+        {
+            var result = targetImage.Clone();
+            for (int y = 0; y < pattern.Height; y++)
+            {
+                for (int x = 0; x < pattern.Width; x++)
+                {
+                    var patternPixel = pattern[x, y];
+                    if (patternPixel.A > 0)
+                    {
+                        result[x, y] = source[x, y];
+                    }
+                }
+            }
+            return result;
+        }
     }
 }

@@ -68,6 +68,10 @@ namespace minecreator.api.Modules
                         int width = (Math.Abs(h ^ (i * 137)) % 2) + 1;
                         stripespattern.Add(width);
                     }
+                    if (stripes.Count > stripespattern.Count)
+                    {
+                        stripespattern = stripespattern.Slice(0, stripespattern.Count).ToList();
+                    }
                     var stripesPattern = PatternHelper.Stripes(patternSize, new Point(0, 0), stripespattern, stripes);
                     bodyPattern = stripesPattern;
                     leftarmPattern = stripesPattern;
@@ -273,7 +277,7 @@ namespace minecreator.api.Modules
 
             return Workspace.Texture;
         }
-        private TextureMapFullPart ProcessMainBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart)
+        private TextureMapFullPart ProcessMainBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart,TexturePattern pattern)
         {
             var frontLengthCharacteristic = characteristics.Length % 4;
             if (frontLengthCharacteristic == 1)
@@ -337,7 +341,7 @@ namespace minecreator.api.Modules
 
             return new TextureMapFullPart { Part = part, OuterPart = outerPart };
         }
-        private TextureMapFullPart ProcessArmBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart)
+        private TextureMapFullPart ProcessArmBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart, TexturePattern pattern)
         {
             var armLength = characteristics.Length % 5;
             var images = new[] { part, outerPart };
