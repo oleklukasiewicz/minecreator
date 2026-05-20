@@ -155,6 +155,7 @@ namespace minecreator.api.Modules
         public override TextureMap GenerateDetailsTexture()
         {
             var detailsCharacterists = Workspace.Characteristics.Details % 2;
+            var lengthCharacteristic = Workspace.Characteristics.Length % 4;
             Workspace.DetailsTexture = new TextureMap()
             {
                 Texture = new Image<Rgba32>(Workspace.Texture.Texture.Width, Workspace.Texture.Texture.Height)
@@ -163,17 +164,15 @@ namespace minecreator.api.Modules
             {
 
                 var lefLegpart = Workspace.Texture.GetPart(TextureMapPart.LEFT_LEG).Clone();
-                var leftlegOuterpart = Workspace.Texture.GetOuterPart(TextureMapPart.LEFT_LEG).Clone();
-                var leftlegOutline = TextureManupulationHelper.DetectOutline(lefLegpart, false, true, false, false, 1, false);
-                TextureManupulationHelper.CopyRectangles(leftlegOuterpart, lefLegpart, leftlegOutline);
+                var leftlegOuterpart = Workspace.DetailsTexture.GetOuterPart(TextureMapPart.LEFT_LEG).Clone();
+                var leftlegBorderRectangle = new Rectangle(0, 12 - lengthCharacteristic, leftlegOuterpart.Width, 1);
+                TextureManupulationHelper.CopyRectangles(leftlegOuterpart, lefLegpart, new List<Rectangle> { leftlegBorderRectangle });
                 Workspace.DetailsTexture.SetOuterPart(TextureMapPart.LEFT_LEG, leftlegOuterpart);
 
-
-
                 var rightLegpart = Workspace.Texture.GetPart(TextureMapPart.RIGHT_LEG).Clone();
-                var rightlegOuterpart = Workspace.Texture.GetOuterPart(TextureMapPart.RIGHT_LEG).Clone();
-                var rightlegOutline = TextureManupulationHelper.DetectOutline(rightLegpart, false, true, false, false, 1, false);
-                TextureManupulationHelper.CopyRectangles(rightlegOuterpart, rightLegpart, rightlegOutline);
+                var rightlegOuterpart = Workspace.DetailsTexture.GetOuterPart(TextureMapPart.RIGHT_LEG).Clone();
+                var rightlegBorderRectangle = new Rectangle(0, 12 - lengthCharacteristic, rightlegOuterpart.Width, 1);
+                TextureManupulationHelper.CopyRectangles(rightlegOuterpart, rightLegpart, new List<Rectangle> { rightlegBorderRectangle });
                 Workspace.DetailsTexture.SetOuterPart(TextureMapPart.RIGHT_LEG, rightlegOuterpart);
             }
             return Workspace.DetailsTexture;

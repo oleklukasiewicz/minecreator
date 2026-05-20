@@ -1,4 +1,5 @@
-﻿using minecreator.api.Model;
+﻿using minecreator.api.Helpers;
+using minecreator.api.Model;
 using minecreator.api.Model.Interface;
 
 namespace minecreator.api.Services
@@ -47,6 +48,9 @@ namespace minecreator.api.Services
         }
         public TextureMap GenerateTexture(OutfitConfiguration config)
         {
+            if (config.Colors.Count == 0)
+                config.Colors.Add(ColorHelper.DEFAULT_PALLETE.BaseColor);
+
             var module = GetModule(config.Type);
             if (module == null) throw new Exception($"No module registered for outfit type {config.Type}");
             module.SetConfiguration(config);

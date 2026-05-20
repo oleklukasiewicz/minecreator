@@ -144,47 +144,7 @@ namespace minecreator.api.Modules
         }
         public override TextureMap GenerateAccessories()
         {
-            var appliedAccTextureMap = new TextureMap()
-            {
-                Texture = new Image<Rgba32>(Workspace.Texture.Texture.Width, Workspace.Texture.Texture.Height)
-            };
-
-            var accessoryCharacteristics = Workspace.Characteristics.BaseDecoration;
-            var locations = AccessoriesHelper.GetLocationsForConfig(Workspace.AccessoryLocations, Configuration, Workspace.Characteristics.BaseDecoration);
-
-
-            var originalBody = Workspace.Texture.GetPart(TextureMapPart.BODY);
-            var bodypart = new Image<Rgba32>(originalBody.Width, originalBody.Height);
-
-            var dominantColor = ColorHelper.GetDominant(Workspace.Texture.Texture);
-            var pallete = ColorHelper.GetPallete(dominantColor, Workspace.UserPallets);
-            var contrastColor = ColorHelper.GetContrast(pallete.BaseColor, Workspace.UserPallets.Select(x => x.BaseColor).ToList());
-            var contractPallete = ColorHelper.GetPallete(contrastColor, Workspace.UserPallets);
-
-            bodypart.Mutate(ctx =>
-            {
-                foreach (var location in locations)
-                {
-                    var accessoryItems = AccessoriesHelper.GetAccessoriesForLocation(location);
-                    if (accessoryItems.Count == 0) continue;
-
-
-                    var selectedAccessory = accessoryItems[accessoryCharacteristics % accessoryItems.Count];
-
-                    var accessoryTexture = AccessoriesHelper.LoadAccessory(selectedAccessory);
-                    if (selectedAccessory.IsReadyForColor)
-                    {
-                        accessoryTexture = AccessoriesHelper.PaintAccessory(accessoryTexture, contractPallete);
-                    }
-
-
-                    ctx.DrawImage(accessoryTexture, location.Location.Location, (PixelColorBlendingMode)PixelAlphaCompositionMode.SrcOver, 1f);
-                }
-            });
-            var texture = bodypart.ToBase64String(PngFormat.Instance);
-            appliedAccTextureMap.SetPart(TextureMapPart.BODY, bodypart);
-
-            Workspace.AccessoryTexture = appliedAccTextureMap;
+            Workspace.AccessoryTexture = AccessoriesHelper.ProcessAccessoriesForPart(TextureMapPart.BODY, Workspace, Configuration);
             return Workspace.AccessoryTexture;
         }
         public override TextureMap GenerateAccessoryTexture()
@@ -194,7 +154,7 @@ namespace minecreator.api.Modules
                 Texture = new Image<Rgba32>(Workspace.Texture.Texture.Width, Workspace.Texture.Texture.Height),
             };
             var bodypart = Workspace.Texture.GetPart(TextureMapPart.BODY).Clone();
-            var backArea = new Rectangle(17, 6, 6, 6);
+            var backArea = new Rectangle(17, 6, 6, 8);
 
             var targetBodyPart = Workspace.AccessoryTexture.GetPart(TextureMapPart.BODY);
 
@@ -219,15 +179,18 @@ namespace minecreator.api.Modules
                 var frontOutline = TextureManupulationHelper.DetectOutline(frontArea, false, false, false, true, 1, true);
                 var frontOutlinePart = TextureManupulationHelper.CopyRectangles(targetFrontArea, frontArea, frontOutline);
                 targetBodyPart.Mutate(x => x.DrawImage(frontOutlinePart, frontRect.Location, 1f));
-                Workspace.AccessoryLocations.Add(new OutfitAccessoryLocation
+                foreach (var rect in frontOutline)
                 {
-                    Location = frontRect,
-                    Type = OutfitAccessory.BUTTONS
-                });
+                    Workspace.AccessoryLocations.Add(new OutfitAccessoryLocation
+                    {
+                        Location = new Rectangle(frontRect.X + rect.X, frontRect.Y + rect.Y, rect.Width, rect.Height),
+                        Type = OutfitAccessory.BUTTONS
+                    });
+                }
             }
             else
             {
-                var frontArea = new Rectangle(5, 8, 6, 6);
+                var frontArea = new Rectangle(5, 7, 6, 8);
 
                 targetBodyPart = TextureManupulationHelper.CopyRectangles(targetBodyPart, bodypart, new List<Rectangle> { frontArea });
                 Workspace.AccessoryLocations.Add(new OutfitAccessoryLocation
@@ -277,7 +240,7 @@ namespace minecreator.api.Modules
 
             return Workspace.Texture;
         }
-        private TextureMapFullPart ProcessMainBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart,TexturePattern pattern)
+        private TextureMapFullPart ProcessMainBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart, TexturePattern pattern)
         {
             var frontLengthCharacteristic = characteristics.Length % 4;
             if (frontLengthCharacteristic == 1)

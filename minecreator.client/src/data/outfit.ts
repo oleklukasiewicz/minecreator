@@ -33,6 +33,14 @@ const isEnumValue = <T extends string>(
 const toStringArray = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
+const randomId = (): string => {
+  const maybeCrypto = (globalThis as any).crypto;
+  if (maybeCrypto && typeof maybeCrypto.randomUUID === "function") {
+    return maybeCrypto.randomUUID();
+  }
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+};
+
 export class Outfit {
   id: string;
   name: string;
@@ -78,7 +86,7 @@ export class Outfit {
 export const createOutfit = (input: OutfitLike = {}): Outfit => {
   const outfit = new Outfit();
 
-  outfit.id = typeof input.id === "string" ? input.id : "";
+  outfit.id = typeof input.id === "string" && input.id !== "" ? input.id : randomId();
   outfit.name = typeof input.name === "string" ? input.name : "";
   outfit.type = input.type ?? "";
   outfit.style = input.style ?? "";

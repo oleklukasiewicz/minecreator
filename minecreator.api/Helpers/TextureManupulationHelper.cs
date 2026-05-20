@@ -32,7 +32,7 @@ namespace minecreator.api.Helpers
             image.Mutate(x => x.DrawImage(layer, new Point(0, 0), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.SrcOver }));
             return image;
         }
-        public static List<Rectangle> DetectOutline(Image<Rgba32> image, bool top, bool bottom, bool left, bool right, int thickness = 1, bool onlyInner = false)
+        public static List<Rectangle> DetectOutline(Image<Rgba32> image, bool top, bool bottom, bool left, bool right, int thickness = 1, bool onlyInner = false, bool onlyOuter = false)
         {
             var rectangles = new List<Rectangle>();
 
@@ -58,6 +58,8 @@ namespace minecreator.api.Helpers
                                 {
                                     bool isEdge = (y - i < 0);
                                     if (isEdge && onlyInner) break;
+                                    if (!isEdge && onlyOuter) break;
+
                                     if (isEdge || accessor.GetRowSpan(y - i)[x].A == 0) { isOutline = true; break; }
                                 }
                             }
@@ -67,6 +69,8 @@ namespace minecreator.api.Helpers
                                 {
                                     bool isEdge = (y + i >= height);
                                     if (isEdge && onlyInner) break;
+                                    if (!isEdge && onlyOuter) break;
+
                                     if (isEdge || accessor.GetRowSpan(y + i)[x].A == 0) { isOutline = true; break; }
                                 }
                             }
@@ -76,6 +80,8 @@ namespace minecreator.api.Helpers
                                 {
                                     bool isEdge = (x - i < 0);
                                     if (isEdge && onlyInner) break;
+                                    if (!isEdge && onlyOuter) break;
+
                                     if (isEdge || row[x - i].A == 0) { isOutline = true; break; }
                                 }
                             }
@@ -85,6 +91,8 @@ namespace minecreator.api.Helpers
                                 {
                                     bool isEdge = (x + i >= width);
                                     if (isEdge && onlyInner) break;
+                                    if (!isEdge && onlyOuter) break;
+
                                     if (isEdge || row[x + i].A == 0) { isOutline = true; break; }
                                 }
                             }
@@ -106,31 +114,41 @@ namespace minecreator.api.Helpers
             if (input == null || input.Count == 0)
                 return new List<Rectangle>();
 
+            var rectangles = new List<Rectangle>(input);
             var merged = new List<Rectangle>();
-            var groupedByY = input.GroupBy(r => r.Y).OrderBy(g => g.Key);
 
-            foreach (var group in groupedByY)
+            while (rectangles.Count > 0)
             {
-                var sortedX = group.OrderBy(r => r.X).ToList();
-                int currentX = sortedX[0].X;
-                int y = sortedX[0].Y;
-                int consecutiveWidth = 1;
+                var current = rectangles[0];
+                rectangles.RemoveAt(0);
 
-                for (int i = 1; i < sortedX.Count; i++)
+                bool foundIntersection;
+                do
                 {
-                    if (sortedX[i].X == currentX + consecutiveWidth)
+                    foundIntersection = false;
+                    for (int i = 0; i < rectangles.Count; i++)
                     {
-                        consecutiveWidth++;
+                        var target = rectangles[i];
+
+                        bool sharesX = current.X == target.X && current.Width == target.Width;
+                        bool touchesY = current.Y + current.Height == target.Y || target.Y + target.Height == current.Y;
+
+                        bool sharesY = current.Y == target.Y && current.Height == target.Height;
+                        bool touchesX = current.X + current.Width == target.X || target.X + target.Width == current.X;
+
+                        if ((sharesX && touchesY) || (sharesY && touchesX))
+                        {
+                            current = Rectangle.Union(current, target);
+                            rectangles.RemoveAt(i);
+                            i--;
+                            foundIntersection = true;
+                        }
                     }
-                    else
-                    {
-                        merged.Add(new Rectangle(currentX, y, consecutiveWidth, 1));
-                        currentX = sortedX[i].X;
-                        consecutiveWidth = 1;
-                    }
-                }
-                merged.Add(new Rectangle(currentX, y, consecutiveWidth, 1));
+                } while (foundIntersection);
+
+                merged.Add(current);
             }
+
             return merged;
         }
         public static Image<Rgba32> FillWithAltPallete(Image<Rgba32> image, Rectangle area, Rgba32 baseColor, Rgba32 newbaseColor, List<Point> excludedPoints = null)
