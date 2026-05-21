@@ -16,7 +16,7 @@ namespace minecreator.api.Helpers
         };
         public static TextureMap? LoadBaseTexture(OutfitStyle style, OutfitType type, OutfitModel model)
         {
-            var baseTexture = baseTextures.FirstOrDefault(bt => bt.Style == style && bt.Type == type && (bt.Model == model || bt.Model == OutfitModel.BOTH));
+            var baseTexture = baseTextures.FirstOrDefault(bt => (bt.Styles.Contains(style) || bt.Styles.Count == 0) && bt.Type == type && (bt.Model == model || bt.Model == OutfitModel.BOTH));
             if (baseTexture == null)
             {
                 return null;

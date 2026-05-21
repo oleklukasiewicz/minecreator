@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ExportConfig } from "$data/export";
-  import { IS_MOBILE_VIEW } from "$data/global";
+  import { currentOutfits, currentSkinModel, currentVersion, IS_MOBILE_VIEW } from "$data/global";
   import { ImportConfig, ImportConfigFromFile } from "$data/import";
   import { GAME_VERSION, Outfit, SKIN_MODEL } from "$data/outfit";
   import { ValueData } from "$src/helpers/dataHelper";
@@ -23,13 +23,12 @@
   import DefaultAnimation from "$src/animation/default";
   import { GenerateOutfits, GetConfiguration } from "$src/data/api";
   import { Configuration } from "$src/data/config";
+  import type { ExportModel } from "$src/data/models/export";
+  import { goto } from "$app/navigation";
 
-  let selectedVersion = $state<string | null>("modern");
-  let selectedSkinModel = $state<string>("classic");
   let currentLocale = $state<string>("en");
   let outfitDialogOpen = $state(false);
 
-  let outfitList: Outfit[] = $state<Outfit[]>([]);
   let selectedOutfit = $state<Outfit | null>(null);
 
   const translatedGameVersions = $derived(
@@ -64,13 +63,13 @@
     const newOutfit: Outfit = new Outfit();
 
     newOutfit.id = timestamp.toString();
-    newOutfit.name = `Outfit ${outfitList.length + 1}`;
+    newOutfit.name = `Outfit ${$currentOutfits.length + 1}`;
     newOutfit.seed = timestamp.toString();
     newOutfit.samples = 1;
     newOutfit.type = configuration.modulesConfig[0]?.name.toLowerCase();
     newOutfit.style = configuration.modulesConfig[0]?.styles[0].toLowerCase();
 
-    outfitList = [newOutfit, ...outfitList];
+    currentOutfits.update((outfits) => [newOutfit, ...outfits]);
     selectedOutfit = newOutfit;
     if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
   };
@@ -82,18 +81,20 @@
     if (!selectedOutfit) return;
 
     const updated = Object.assign(new Outfit(), selectedOutfit, updatedOutfit);
-    outfitList = outfitList.map((o) => (o.id === updated.id ? updated : o));
+    currentOutfits.update((outfits) =>
+      outfits.map((o) => (o.id === updated.id ? updated : o)),
+    );
     selectedOutfit = updated;
   };
   const ExportData = async function () {
-    await ExportConfig(outfitList, selectedSkinModel);
+    await ExportConfig($currentOutfits, $currentSkinModel);
   };
   const ImportData = async function () {
     const data = await ImportConfig();
     if (data) {
-      outfitList = [...data, ...outfitList];
+      currentOutfits.update((outfits) => [...data, ...outfits]);
       if (data.length > 0) {
-        selectedOutfit = outfitList[0];
+        selectedOutfit = $currentOutfits[0];
         if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
       }
     }
@@ -102,18 +103,20 @@
     const file = e[0];
     if (file) {
       const data = await ImportConfigFromFile(file);
-      outfitList = [...data, ...outfitList];
+      currentOutfits.update((outfits) => [...data, ...outfits]);
       if (data.length > 0) {
-        selectedOutfit = outfitList[0];
+        selectedOutfit = $currentOutfits[0];
         if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
       }
     }
   };
   const RemoveOutfit = function (outfit: Outfit) {
-    outfitList = outfitList.filter((o) => o.id !== outfit.id);
+    currentOutfits.update((outfits) =>
+      outfits.filter((o) => o.id !== outfit.id),
+    );
 
     if (selectedOutfit?.id === outfit.id) {
-      selectedOutfit = outfitList.length > 0 ? outfitList[0] : null;
+      selectedOutfit = $currentOutfits.length > 0 ? $currentOutfits[0] : null;
       if (!selectedOutfit) outfitDialogOpen = false;
     }
   };
@@ -126,21 +129,7 @@
   let generatedOutfits = $state<string>("");
 
   const generateOutfits = async function () {
-    const json = JSON.stringify(
-      {
-        model: selectedSkinModel,
-        outfits: outfitList.map((o) => o.ToExportModel()),
-      },
-      null,
-      2,
-    );
-
-    var generated = await GenerateOutfits(json);
-    generatedOutfits = "data:image/png;base64," + generated;
-    await tick();
-    if (previewComponent && typeof previewComponent.addAnimation === "function") {
-      previewComponent.addAnimation(DefaultAnimation);
-    }
+    goto("/generated");
   };
 
   $effect(() => {
@@ -168,7 +157,7 @@
       <SectionTitle label={$_("page.gameVersion")} />
       <Select
         items={translatedGameVersions}
-        bind:selectedItem={selectedVersion}
+        bind:selectedItem={$currentVersion}
         itemText="label"
         itemValue="value"
         placeholder={$_("page.gameVersionPlaceholder")}
@@ -178,7 +167,7 @@
       <SectionTitle label={$_("page.skinModel")} />
       <Select
         items={translatedSkinModels}
-        bind:selectedItem={selectedSkinModel}
+        bind:selectedItem={$currentSkinModel}
         itemText="label"
         itemValue="value"
         placeholder={$_("page.skinModelPlaceholder")}
@@ -187,10 +176,10 @@
     <div></div>
     <div id="generate">
       <Button
-        disabled={outfitList.length === 0 ||
-          selectedVersion === null ||
-          selectedSkinModel === null ||
-          selectedSkinModel.length === 0}
+        disabled={$currentOutfits.length === 0 ||
+          $currentVersion === null ||
+          $currentSkinModel === null ||
+          $currentSkinModel.length === 0}
         label={$_("page.generate")}
         icon={GenerateIcon}
         style="height:64px;"
@@ -222,18 +211,18 @@
           label={$_("page.newOutfit")}
           icon={AddIcon}
           onclick={addDefaultOutfit}
-          disabled={selectedVersion === null ||
-            selectedSkinModel === null ||
-            selectedSkinModel.length === 0}
+          disabled={$currentVersion === null ||
+            $currentSkinModel === null ||
+            $currentSkinModel.length === 0}
         />
       </div>
       <div class="separator horizontal"></div>
-      {#if outfitList.length === 0}
+      {#if $currentOutfits.length === 0}
         <span id="no-outfits">{$_("page.noOutfits")}</span>
       {:else}
         <div id="items-content">
           <div id="items-list">
-            {#each outfitList as outfit (outfit.id)}
+            {#each $currentOutfits as outfit (outfit.id)}
               <ClothListItem
                 {outfit}
                 onclick={() => setSelectedOutfit(outfit)}
@@ -255,14 +244,6 @@
                   onUpdate={updateSelectedOutfit}
                   {configuration}
                 />
-                {#if generatedOutfits.length > 0}
-                  <OutfitPackageRender
-                    source={generatedOutfits}
-                    model={MODEL_TYPE.STEVE}
-                    isDynamic
-                    bind:this={previewComponent}
-                  />
-                {/if}
               </Dialog>
             {:else}
               <OutfitPreview
@@ -270,14 +251,6 @@
                 onUpdate={updateSelectedOutfit}
                 {configuration}
               />
-              {#if generatedOutfits.length > 0}
-                <OutfitPackageRender
-                  source={generatedOutfits}
-                  model={MODEL_TYPE.STEVE}
-                  isDynamic
-                  bind:this={previewComponent}
-                />
-              {/if}
             {/if}
           </div>
         </div>

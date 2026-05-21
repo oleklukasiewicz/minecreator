@@ -1,0 +1,109 @@
+#generated-view {
+	margin: 0 auto;
+	padding: 12px;
+	box-sizing: border-box;
+	width: min(1200px, 100%);
+
+	.state {
+		color: var(--color-theme-D5);
+		font-family: minecraft;
+		font-size: var(--size-font-caption);
+		text-align: center;
+		margin: 10vh 0;
+
+		&.error {
+			color: var(--color-error, #ff7b7b);
+		}
+	}
+
+	#generated-layout {
+		display: grid;
+		grid-template-columns: minmax(220px, 30%) minmax(0, 1fr);
+		gap: 12px;
+		align-items: start;
+	}
+
+	#generated-list {
+		background-color: var(--color-theme);
+		padding: 8px;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		max-height: calc(100vh - 90px);
+		overflow: auto;
+
+		.render-list-item {
+			border: none;
+			padding: 8px;
+			box-sizing: border-box;
+			display: grid;
+			grid-template-columns: 56px minmax(0, 1fr);
+			gap: 10px;
+			align-items: center;
+			text-align: left;
+			cursor: pointer;
+			background-color: var(--color-theme-D2);
+			color: var(--color-font);
+
+			&:hover {
+				background-color: var(--color-theme-D3);
+			}
+
+			&:active {
+				background-color: var(--color-active);
+			}
+
+			&.selected {
+				background-color: var(--color-accent);
+				color: var(--color-accent-font);
+			}
+
+			img {
+				width: 56px;
+				height: 56px;
+				image-rendering: pixelated;
+				background: var(--color-theme-D1);
+			}
+
+			span {
+				font-family: minecraft;
+				font-size: var(--size-font-base);
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		}
+	}
+
+	#single-render-window {
+		min-height: 520px;
+		background-color: var(--color-theme);
+		padding: 12px;
+		box-sizing: border-box;
+
+		h2 {
+			margin: 0 0 12px;
+			text-align: center;
+			font-family: minecraft;
+			font-size: var(--size-font-subtitle);
+			color: var(--color-font);
+		}
+	}
+}
+
+@media (max-width: 900px) {
+	#generated-view {
+		#generated-layout {
+			grid-template-columns: 1fr;
+		}
+
+		#generated-list {
+			max-height: 260px;
+		}
+
+		#single-render-window {
+			min-height: 380px;
+		}
+	}
+}

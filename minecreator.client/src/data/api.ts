@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { Configuration } from "./config";  
+import type { ExportModel } from "./models/export";
 
 export async function GetConfiguration(): Promise<Configuration> {
     const url = "/api/configuration";
@@ -18,7 +19,7 @@ export async function GetConfiguration(): Promise<Configuration> {
     }
 }
 
-export async function GenerateOutfits(outfitsExport: any): Promise<any> {
+export async function GenerateOutfits(outfitsExport: ExportModel): Promise<any> {
     const url = "/api/generate";
 
     try {

@@ -30,6 +30,7 @@ namespace minecreator.api.Controllers
         public async Task<IActionResult> Generate([FromBody] GenerateRequest request)
         {
             var list = new List<OutfitConfiguration>();
+            var response = new List<GenerateResponse>();
             foreach (var item in request.Outfits)
             {
                 list.Add(item.ToConfig(request.Model));
@@ -44,10 +45,16 @@ namespace minecreator.api.Controllers
                 var stream = new MemoryStream();
                 result.Texture.SaveAsPng(stream);
                 image = stream.ToArray();
+                response.Add(new GenerateResponse()
+                {
+                    Config = item,
+                    Image = image
+                });
+
             }
 
 
-            return Ok(image);
+            return Ok(new { outfits=response });
         }
     }
 }

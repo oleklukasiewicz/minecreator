@@ -13,6 +13,7 @@ namespace minecreator.api.Modules
         public BottomOutfitTypeModule()
         {
             Options.Accessory = new List<OutfitAccessory>() { OutfitAccessory.PINS };
+            Options.Styles = new List<OutfitStyle>() { OutfitStyle.CASUAL, OutfitStyle.SUMMER, OutfitStyle.WINTER };
         }
         public override TextureMap GenerateBaseTexture()
         {
@@ -73,7 +74,7 @@ namespace minecreator.api.Modules
         private TextureMapFullPart ProcessLegPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> innerpart, Image<Rgba32> outerpart, TexturePattern pattern)
         {
             //length
-            var lengthCharacteristic = Workspace.Characteristics.Length % 4;
+            var lengthCharacteristic = Workspace.Characteristics.Length;
 
             TextureManupulationHelper.MoveByVector(innerpart, new Rectangle(0, 9, innerpart.Width, 4), new Point(0, lengthCharacteristic * -1));
             var leglastrow = 12 + lengthCharacteristic * -1;
@@ -155,7 +156,7 @@ namespace minecreator.api.Modules
         public override TextureMap GenerateDetailsTexture()
         {
             var detailsCharacterists = Workspace.Characteristics.Details % 2;
-            var lengthCharacteristic = Workspace.Characteristics.Length % 4;
+            var lengthCharacteristic = Workspace.Characteristics.Length;
             Workspace.DetailsTexture = new TextureMap()
             {
                 Texture = new Image<Rgba32>(Workspace.Texture.Texture.Width, Workspace.Texture.Texture.Height)

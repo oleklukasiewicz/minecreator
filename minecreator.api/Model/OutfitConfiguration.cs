@@ -14,8 +14,9 @@ namespace minecreator.api.Model
     public enum OutfitStyle
     {
         CASUAL,
+        WINTER,
         FORMAL,
-        SPORT,
+        SUMMER
     }
     public enum OutfitAccessory
     {

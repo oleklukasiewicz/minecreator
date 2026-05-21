@@ -12,5 +12,6 @@ namespace minecreator.api.Model
         public bool UseBaseColor { get; set; }
         public bool IsForGeneration { get; set; }
         public bool IsForOuterLayer { get; set; } = false;
+        public List<OutfitStyle> Styles { get; set; }=new List<OutfitStyle>();
     }
 }

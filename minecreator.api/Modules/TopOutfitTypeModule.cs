@@ -15,6 +15,7 @@ namespace minecreator.api.Modules
         public TopOutfitTypeModule()
         {
             Options.Accessory = new List<OutfitAccessory> { OutfitAccessory.BUTTONS, OutfitAccessory.IMAGES };
+            Options.Styles = new List<OutfitStyle> { OutfitStyle.CASUAL, OutfitStyle.SUMMER, OutfitStyle.WINTER };
         }
         public override TextureMap GenerateBaseTexture()
         {
@@ -74,6 +75,21 @@ namespace minecreator.api.Modules
                     }
                     var stripesPattern = PatternHelper.Stripes(patternSize, new Point(0, 0), stripespattern, stripes);
                     bodyPattern = stripesPattern;
+
+                    stripesPattern.Texture.ProcessPixelRows(accessor =>
+                    {
+                        for (int y = 0; y < 4; y++)
+                        {
+                            var row = accessor.GetRowSpan(y);
+                            for (int x = 0; x < row.Length; x++)
+                            {
+                                if (row[x].A == 0)
+                                    continue;
+                                row[x] = ColorHelper.DEFAULT_PALLETE.BaseColor;
+                            }
+                        }
+                    });
+
                     leftarmPattern = stripesPattern;
                     rightarmPattern = stripesPattern;
                 }
@@ -165,7 +181,7 @@ namespace minecreator.api.Modules
                 Type = OutfitAccessory.IMAGES
             });
 
-            var frontLengthCharacteristic = Workspace.Characteristics.Length % 4;
+            var frontLengthCharacteristic = Workspace.Characteristics.Length;
             if (frontLengthCharacteristic == 1)
                 frontLengthCharacteristic = 0;
 
@@ -181,6 +197,7 @@ namespace minecreator.api.Modules
                 targetBodyPart.Mutate(x => x.DrawImage(frontOutlinePart, frontRect.Location, 1f));
                 foreach (var rect in frontOutline)
                 {
+                    if (rect.Width < 2 && rect.Height < 2) continue;
                     Workspace.AccessoryLocations.Add(new OutfitAccessoryLocation
                     {
                         Location = new Rectangle(frontRect.X + rect.X, frontRect.Y + rect.Y, rect.Width, rect.Height),
@@ -242,7 +259,7 @@ namespace minecreator.api.Modules
         }
         private TextureMapFullPart ProcessMainBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart, TexturePattern pattern)
         {
-            var frontLengthCharacteristic = characteristics.Length % 4;
+            var frontLengthCharacteristic = characteristics.Length;
             if (frontLengthCharacteristic == 1)
                 frontLengthCharacteristic = 0;
 
@@ -306,7 +323,7 @@ namespace minecreator.api.Modules
         }
         private TextureMapFullPart ProcessArmBodyPart(OutfityTypeCharacteristics characteristics, Image<Rgba32> part, Image<Rgba32> outerPart, TexturePattern pattern)
         {
-            var armLength = characteristics.Length % 5;
+            var armLength = characteristics.Length;
             var images = new[] { part, outerPart };
             for (int step = 1; step <= armLength; step++)
             {

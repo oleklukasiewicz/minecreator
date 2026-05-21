@@ -23,9 +23,9 @@ namespace minecreator.api.Helpers
             new BaseButtonsAccessory(),
             new ContractButtonsAccessory(),
         };
-        public static List<OutfitAccessoryItem> GetAccessoriesForLocation(OutfitAccessoryLocation location)
+        public static List<OutfitAccessoryItem> GetAccessoriesForLocation(OutfitAccessoryLocation location, OutfitStyle style)
         {
-            return _accessories.Where(a => a.Type == location.Type && a.Size.X <= location.Location.Width && a.Size.Y <= location.Location.Height).ToList();
+            return _accessories.Where(a => a.Type == location.Type && a.Size.X <= location.Location.Width && a.Size.Y <= location.Location.Height && (a.Styles.Count() == 0 || a.Styles.Contains(style))).ToList();
         }
         public static Image<Rgba32> LoadAccessory(OutfitAccessoryItem accessory, bool useOuterTexture = false)
         {
@@ -90,7 +90,7 @@ namespace minecreator.api.Helpers
 
             foreach (var location in locations)
             {
-                var accessoryItems = AccessoriesHelper.GetAccessoriesForLocation(location);
+                var accessoryItems = AccessoriesHelper.GetAccessoriesForLocation(location, configuration.Style);
                 if (accessoryItems.Count == 0) continue;
 
                 var selectedAccessory = accessoryItems[accessoryCharacteristics % accessoryItems.Count];

@@ -1,4 +1,13 @@
-import { readonly, writable, type Readable, type Writable } from "svelte/store";
+import {
+  derived,
+  readonly,
+  writable,
+  type Readable,
+  type Writable,
+} from "svelte/store";
+import { type Outfit } from "./outfit";
+import { ExportModel } from "./models/export";
+import { propertyStore } from "svelte-writable-derived";
 
 const isMobileView: Writable<boolean> = writable(false);
 export const IS_MOBILE_VIEW: Readable<boolean> = readonly(isMobileView);
@@ -10,3 +19,18 @@ export function Setup() {
     isMobileView.set(event.matches);
   });
 }
+export const currentExport: Writable<ExportModel> = writable(
+  new ExportModel("classic", "modern", []),
+);
+export const currentOutfits: Writable<Outfit[]> = propertyStore(
+  currentExport,
+  "outfits",
+);
+export const currentSkinModel: Writable<string> = propertyStore(
+  currentExport,
+  "model",
+);
+export const currentVersion: Writable<string> = propertyStore(
+  currentExport,
+  "gameVersion",
+);

@@ -68,7 +68,9 @@
     "outfitStyle": {
       "casual": "Codzienny",
       "formal": "Formalny",
-      "sport": "Sportowy"
+      "sport": "Sportowy",
+      "winter": "Zimowy",
+      "summer": "Letni"
     },
     "outfitAccessory": {
       "patches": "Naszywki",

@@ -68,7 +68,9 @@
     "outfitStyle": {
       "casual": "Casual",
       "formal": "Formal",
-      "sport": "Sport"
+      "sport": "Sport",
+      "winter": "Winter",
+      "summer": "Summer"
     },
     "outfitAccessory": {
       "patches": "Patches",
