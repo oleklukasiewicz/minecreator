@@ -12,7 +12,7 @@ namespace minecreator.api.Modules
         public override OutfitType OutfitType => OutfitType.BOTTOM;
         public BottomOutfitTypeModule()
         {
-            Options.Accessory = new List<OutfitAccessory>() { OutfitAccessory.PINS };
+            Options.Accessory = new List<OutfitAccessory>() { };
             Options.Styles = new List<OutfitStyle>() { OutfitStyle.CASUAL, OutfitStyle.SUMMER, OutfitStyle.WINTER };
         }
         public override TextureMap GenerateBaseTexture()
@@ -20,7 +20,7 @@ namespace minecreator.api.Modules
             Workspace.Texture.CopyParts(Workspace.BaseTexture, new List<TextureMapPart>() { TextureMapPart.RIGHT_LEG, TextureMapPart.LEFT_LEG });
 
             var patterndimensions = new Point(Workspace.Texture.GetPart(TextureMapPart.LEFT_LEG).Width, Workspace.Texture.GetPart(TextureMapPart.LEFT_LEG).Height);
-            var materialCharacteristic = Workspace.Characteristics.Material % 3;
+            var materialCharacteristic = Workspace.Characteristics.Material % 5;
 
             TexturePattern leftlegpattern = null;
             TexturePattern rightlegpattern = null;
@@ -61,6 +61,21 @@ namespace minecreator.api.Modules
                     leftlegpattern = PatternHelper.JeansHoles(patterndimensions, (int)Workspace.Characteristics.Hash, new Point(0, 0), ColorHelper.COLORS_PALLETE[0]);
                     rightlegpattern = PatternHelper.JeansHoles(patterndimensions, (int)Workspace.Characteristics.Hash, new Point(16, 16), ColorHelper.COLORS_PALLETE[0]);
                 }
+                else if (materialCharacteristic == 3)//Herringbone
+                {
+                    var colors = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
+                                           .Take(Configuration.Colors.Count)
+                                           .ToList();
+                    var herringbonePattern = PatternHelper.Herringbone(patterndimensions, new Point(0, 0), colors);
+                    leftlegpattern = herringbonePattern;
+                    rightlegpattern = herringbonePattern;
+
+
+                } else if (materialCharacteristic == 4) // flannel alt
+                {
+                    leftlegpattern = PatternHelper.Flannel(patterndimensions, 1, new Point(0, 0), ColorHelper.DEFAULT_PALLETE.Colors);
+                    rightlegpattern = leftlegpattern;
+                }
             }
 
             var leftLegTexture = ModuleHelper.ProcessTexturePart(Workspace.Texture.GetFullPart(TextureMapPart.LEFT_LEG), Workspace.Characteristics, leftlegpattern, ProcessLegPart, materialCharacteristic == 2);
@@ -80,7 +95,7 @@ namespace minecreator.api.Modules
             var leglastrow = 12 + lengthCharacteristic * -1;
 
             var materialCharacteristic = Workspace.Characteristics.Material % 3;
-            if (materialCharacteristic == 2)
+            if (materialCharacteristic == 2 && pattern != null)
             {
                 var tempImage = new Image<Rgba32>(innerpart.Width, innerpart.Height);
                 tempImage = TextureManupulationHelper.CopyRectangles(tempImage, innerpart, new List<Rectangle>() { new Rectangle(0, leglastrow, innerpart.Width, 1) });

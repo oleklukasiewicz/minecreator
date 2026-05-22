@@ -22,7 +22,8 @@ namespace minecreator.api.Modules
             Workspace.Texture.CopyParts(Workspace.BaseTexture, new List<TextureMapPart>
             { TextureMapPart.BODY, TextureMapPart.LEFT_ARM, TextureMapPart.RIGHT_ARM });
 
-            var materialCharacteristic = Workspace.Characteristics.Material % 4;
+            var materialCharacteristic = Workspace.Characteristics.Material % 8;
+
 
             TexturePattern bodyPattern = null;
             TexturePattern leftarmPattern = null;
@@ -103,6 +104,51 @@ namespace minecreator.api.Modules
                     leftarmPattern = hawaiiPattern;
                     rightarmPattern = hawaiiPattern;
                 }
+                else if (materialCharacteristic == 4) //knit
+                {
+                    var colors = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
+                    .Take(Configuration.Colors.Count)
+                    .ToList();
+                    var knitPattern = PatternHelper.Knit(patternSize, new Point(0, 0), colors);
+                    bodyPattern = knitPattern;
+                    leftarmPattern = knitPattern;
+                    rightarmPattern = knitPattern;
+                }
+                else if (materialCharacteristic == 5)//agryle
+                {
+                    var colors = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
+                                            .Take(Configuration.Colors.Count)
+                                            .ToList();
+                    var agrylePattern = PatternHelper.Argyle(patternSize, new Point(0, 0), colors);
+                    bodyPattern = agrylePattern;
+                    leftarmPattern = agrylePattern;
+                    rightarmPattern = agrylePattern;
+
+                }
+                else if (materialCharacteristic == 6)//Herringbone
+                {
+                    var colors = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
+                                            .Take(Configuration.Colors.Count)
+                                            .ToList();
+                    var herringbonePattern = PatternHelper.Herringbone(patternSize, new Point(0, 0), colors);
+                    bodyPattern = herringbonePattern;
+                    leftarmPattern = herringbonePattern;
+                    rightarmPattern = herringbonePattern;
+                }
+                else if (materialCharacteristic == 8) // flannel alt
+                    {
+                        bodyPattern = PatternHelper.Flannel(patternSize, 1, new Point(0, 0), ColorHelper.DEFAULT_PALLETE.Colors);
+                        if (Configuration.Model == OutfitModel.SLIM)
+                        {
+                            leftarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(0, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                            rightarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                        }
+                        else
+                        {
+                            leftarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                            rightarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                        }
+                    }
             }
 
             var fronttexture = ModuleHelper.ProcessTexturePart(Workspace.Texture.GetFullPart(TextureMapPart.BODY), Workspace.Characteristics, bodyPattern, ProcessMainBodyPart);

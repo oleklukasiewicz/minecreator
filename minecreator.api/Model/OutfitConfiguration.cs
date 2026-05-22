@@ -7,7 +7,6 @@ namespace minecreator.api.Model
         TOP,
         BOTTOM,
         SHOES,
-        SHIRT,
         HAT,
 
     }

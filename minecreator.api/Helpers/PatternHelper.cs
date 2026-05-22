@@ -39,49 +39,37 @@ namespace minecreator.api.Helpers
                         result[x, y] = mappedColor;
                     }
                     else if (pattern.BlendType == TexturePatternBlendType.SingleBrightnessMapWithOpacity)
-                    {
-                        // Jeśli piksel wzoru jest przezroczysty (środek dziury), wpisujemy go bezpośrednio
+                    { 
                         if (patternPixel.A == 0)
                         {
                             result[x, y] = patternPixel;
                             continue;
                         }
 
-                        // Pobieramy paletę bazową
                         var basePalette = ColorHelper.COLORS_PALLETE[0];
 
-                        // Szukamy indeksu koloru bazowego w tej palecie
                         int baseColorIndex = basePalette.Colors.IndexOf(basePalette.BaseColor);
                         if (baseColorIndex == -1) baseColorIndex = 0;
 
-                        // Bezpieczne szukanie indeksu koloru z patternu. 
-                        // Jeśli kolor nie leży w palecie bezpośrednio, szukamy koloru o identycznych składowych RGB
                         int patternColorIndex = basePalette.Colors.FindIndex(c => c.R == patternPixel.R && c.G == patternPixel.G && c.B == patternPixel.B);
 
-                        // Jeśli nadal nie znaleziono (np. kolor z GetBrighter wypadł poza bazową listę), 
-                        // domyślnie przyjmujemy, że chcemy rozjaśnić o 1 stopień (indeks w górę)
                         int distance = 1;
 
                         if (patternColorIndex != -1)
                         {
-                            // Jeśli znaleźliśmy kolor w palecie, liczymy faktyczny dystans (różnicę jasności)
+                            
                             distance = baseColorIndex - patternColorIndex;
                         }
 
-                        // Pobieramy indeks aktualnego piksela tła w tej samej palecie bazowej
                         int pixelColorIndex = basePalette.Colors.FindIndex(c => c.R == basePixel.R && c.G == basePixel.G && c.B == basePixel.B);
 
-                        // Jeśli bazowego piksela nie ma w palecie, nie możemy go zmapować – zostawiamy oryginał
                         if (pixelColorIndex == -1)
                         {
                             result[x, y] = basePixel;
                             continue;
                         }
 
-                        // Aplikujemy przesunięcie (rozjaśnienie)
                         int mappedColorIndex = pixelColorIndex - distance;
-
-                        // Zabezpieczenie przed wyjściem poza zakres palety (clamping)
                         if (mappedColorIndex < 0)
                         {
                             mappedColorIndex = 0;
@@ -91,7 +79,6 @@ namespace minecreator.api.Helpers
                             mappedColorIndex = basePalette.Colors.Count - 1;
                         }
 
-                        // Przypisujemy odpowiednio rozjaśniony odcień
                         result[x, y] = basePalette.Colors[mappedColorIndex];
                     }
                 }
@@ -321,6 +308,177 @@ namespace minecreator.api.Helpers
             {
                 Texture = image,
                 BlendType = TexturePatternBlendType.SingleBrightnessMapWithOpacity
+            };
+        }
+        public static TexturePattern Knit(Point dimensions, Point offset, List<Rgba32> colors)
+        {
+            var image = new Image<Rgba32>(dimensions.X, dimensions.Y);
+
+            int colorCount = Math.Min(colors.Count, 5);
+
+            for (int y = 0; y < dimensions.Y; y++)
+            {
+                int patternY = (y + offset.Y) % 8;
+                if (patternY < 0) patternY += 8;
+
+                for (int x = 0; x < dimensions.X; x++)
+                {
+                    int patternX = (x + offset.X) % 4;
+                    if (patternX < 0) patternX += 4;
+
+                    Rgba32 pixelColor;
+                    int c0 = 0;
+                    int c1 = colorCount > 1 ? 1 : 0;
+                    int c2 = colorCount > 2 ? 2 : (colorCount > 1 ? 1 : 0);
+                    int c3 = colorCount > 3 ? 3 : (colorCount > 1 ? 1 : 0);
+                    int c4 = colorCount > 4 ? 4 : (colorCount > 1 ? 1 : 0);
+
+                    if (patternY == 0 || patternY == 4)
+                    {
+                        pixelColor = (patternX == 0 || patternX == 2) ? colors[c0] : colors[c4];
+                    }
+                    else if (patternY == 1 || patternY == 3)
+                    {
+                        pixelColor = (patternX == 0 || patternX == 2) ? colors[c1] : colors[c3];
+                    }
+                    else if (patternY == 2)
+                    {
+                        pixelColor = (patternX == 0 || patternX == 2) ? colors[c2] : colors[c2];
+                    }
+                    else if (patternY == 5 || patternY == 7)
+                    {
+                        pixelColor = (patternX == 1 || patternX == 3) ? colors[c1] : colors[c3];
+                    }
+                    else
+                    {
+                        pixelColor = (patternX == 1 || patternX == 3) ? colors[c2] : colors[c2];
+                    }
+
+                    image[x, y] = pixelColor;
+                }
+            }
+
+            return new TexturePattern()
+            {
+                Texture = image,
+                BlendType = TexturePatternBlendType.BrightnessMap
+            };
+        }
+        public static TexturePattern Argyle(Point dimensions, Point offset, List<Rgba32> colors)
+        {
+            var image = new Image<Rgba32>(dimensions.X, dimensions.Y);
+
+            int colorCount = Math.Min(colors.Count, 5);
+
+            for (int y = 0; y < dimensions.Y; y++)
+            {
+                int patternY = (y + offset.Y) % 8;
+                if (patternY < 0) patternY += 8;
+
+                for (int x = 0; x < dimensions.X; x++)
+                {
+                    int patternX = (x + offset.X) % 8;
+                    if (patternX < 0) patternX += 8;
+
+                    int cBase = 0;
+                    int cRomb1 = colorCount > 1 ? 1 : 0;
+                    int cRomb2 = colorCount > 2 ? 2 : (colorCount > 1 ? 1 : 0);
+                    int cLine1 = colorCount > 3 ? 3 : (colorCount > 1 ? 1 : 0);
+                    int cLine2 = colorCount > 4 ? 4 : (colorCount > 2 ? 2 : (colorCount > 1 ? 1 : 0));
+
+                    Rgba32 pixelColor = colors[cBase];
+
+                    if ((patternY == 0 && patternX == 3) || (patternY == 1 && (patternX == 2 || patternX == 4)) ||
+                        (patternY == 2 && (patternX == 1 || patternX == 5)) || (patternY == 3 && (patternX == 0 || patternX == 6)) ||
+                        (patternY == 4 && (patternX == 1 || patternX == 5)) || (patternY == 5 && (patternX == 2 || patternX == 4)) ||
+                        (patternY == 6 && (patternX == 3 || patternX == 7)) || (patternY == 7 && patternX == 4))
+                    {
+                        pixelColor = colors[cLine1];
+                    }
+                    else if ((patternY == 0 && patternX == 7) || (patternY == 1 && (patternX == 6 || patternX == 0)) ||
+                             (patternY == 2 && (patternX == 5 || patternX == 1)) || (patternY == 3 && (patternX == 4 || patternX == 2)) ||
+                             (patternY == 4 && (patternX == 3 || patternX == 3)) || (patternY == 5 && (patternX == 2 || patternX == 4)) ||
+                             (patternY == 6 && (patternX == 1 || patternX == 5)) || (patternY == 7 && (patternX == 0 || patternX == 6)))
+                    {
+                        pixelColor = colors[cLine2];
+                    }
+                    else if ((patternY + patternX == 3) || (patternY + patternX == 11) || (Math.Abs(patternY - patternX) == 4))
+                    {
+                        pixelColor = colors[cRomb1];
+                    }
+                    else if ((patternY + patternX == 7) || (patternY == patternX))
+                    {
+                        pixelColor = colors[cRomb2];
+                    }
+
+                    image[x, y] = pixelColor;
+                }
+            }
+
+            return new TexturePattern()
+            {
+                Texture = image,
+                BlendType = TexturePatternBlendType.BrightnessMap
+            };
+        }
+        public static TexturePattern Herringbone(Point dimensions, Point offset, List<Rgba32> colors)
+        {
+            var image = new Image<Rgba32>(dimensions.X, dimensions.Y);
+
+            if (colors == null || colors.Count == 0)
+            {
+                colors = new List<Rgba32> { new Rgba32(120, 120, 120) };
+            }
+
+            int colorCount = Math.Min(colors.Count, 5);
+
+            for (int y = 0; y < dimensions.Y; y++)
+            {
+                int patternY = (y + offset.Y) % 4;
+                if (patternY < 0) patternY += 4;
+
+                for (int x = 0; x < dimensions.X; x++)
+                {
+                    int patternX = (x + offset.X) % 4;
+                    if (patternX < 0) patternX += 4;
+
+                    int c0 = 0;
+                    int c1 = colorCount > 1 ? 1 : 0;
+                    int c2 = colorCount > 2 ? 2 : (colorCount > 1 ? 1 : 0);
+                    int c3 = colorCount > 3 ? 3 : (colorCount > 2 ? 2 : (colorCount > 1 ? 1 : 0));
+                    int c4 = colorCount > 4 ? 4 : (colorCount > 3 ? 3 : (colorCount > 1 ? 1 : 0));
+
+                    Rgba32 pixelColor;
+
+                    if (patternY == 0)
+                    {
+                        if (patternX == 0 || patternX == 3) pixelColor = colors[c0];
+                        else pixelColor = colors[c1];
+                    }
+                    else if (patternY == 1)
+                    {
+                        if (patternX == 1 || patternX == 2) pixelColor = colors[c0];
+                        else pixelColor = colors[c2];
+                    }
+                    else if (patternY == 2)
+                    {
+                        if (patternX == 1 || patternX == 2) pixelColor = colors[c0];
+                        else pixelColor = colors[c3];
+                    }
+                    else
+                    {
+                        if (patternX == 0 || patternX == 3) pixelColor = colors[c0];
+                        else pixelColor = colors[c4];
+                    }
+
+                    image[x, y] = pixelColor;
+                }
+            }
+
+            return new TexturePattern()
+            {
+                Texture = image,
+                BlendType = TexturePatternBlendType.BrightnessMap
             };
         }
     }
