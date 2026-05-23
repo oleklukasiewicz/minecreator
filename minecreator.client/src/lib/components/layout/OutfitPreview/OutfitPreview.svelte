@@ -208,6 +208,7 @@
       <SectionTitle label={$_("outfitPreview.accessory")} />
       <Select
         items={translatedAccessories}
+        disabled={translatedAccessories.length === 0}
         selectedItem={outfit.accessories}
         itemText="label"
         multiple

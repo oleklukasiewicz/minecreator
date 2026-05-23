@@ -262,5 +262,27 @@ namespace minecreator.api.Helpers
             }
             return result;
         }
+
+        public static Image<Rgba32> CutRectangle(Image<Rgba32> image, Rectangle area)
+        {
+            var result = image.Clone();
+            //reaplce area with transparent pixels
+            result.ProcessPixelRows(accessor =>
+            {
+                int startY = Math.Max(0, area.Top);
+                int endY = Math.Min(accessor.Height, area.Bottom);
+                int startX = Math.Max(0, area.Left);
+                int endX = Math.Min(accessor.Width, area.Right);
+                for (int y = startY; y < endY; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (int x = startX; x < endX; x++)
+                    {
+                        row[x] = new Rgba32(0, 0, 0, 0);
+                    }
+                }
+            });
+            return result;
+        }
     }
 }

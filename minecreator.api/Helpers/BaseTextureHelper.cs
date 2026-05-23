@@ -14,11 +14,20 @@ namespace minecreator.api.Helpers
             new ClassicTopCasualBaseTexture(),
             new SlimTopCasualBaseTexture(),
             new BottomCasualBaseTexture(),
-            new ShoesCasualBaseTexture()
+            new ShoesCasualBaseTexture(),
+            new ShoesCasualAltBaseTexture()
         };
-        public static TextureMap? LoadBaseTexture(OutfitStyle style, OutfitType type, OutfitModel model)
+        public static TextureMap? LoadBaseTexture(OutfitStyle style, OutfitType type, OutfitModel model, int hash=1)
         {
-            var baseTexture = baseTextures.FirstOrDefault(bt => (bt.Styles.Contains(style) || bt.Styles.Count == 0) && bt.Type == type && (bt.Model == model || bt.Model == OutfitModel.BOTH));
+            BaseTexture baseTexture;
+            var found = baseTextures.Where(bt => (bt.Styles.Contains(style) || bt.Styles.Count == 0) && bt.Type == type && (bt.Model == model || bt.Model == OutfitModel.BOTH)).ToList();
+            if (found?.Count() > 0)
+            {
+                baseTexture = found[hash % found.Count()];
+            }
+            else
+                baseTexture = found.FirstOrDefault();
+
             if (baseTexture == null)
             {
                 return null;
