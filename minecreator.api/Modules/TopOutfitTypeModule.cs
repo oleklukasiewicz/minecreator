@@ -22,7 +22,7 @@ namespace minecreator.api.Modules
             Workspace.Texture.CopyParts(Workspace.BaseTexture, new List<TextureMapPart>
             { TextureMapPart.BODY, TextureMapPart.LEFT_ARM, TextureMapPart.RIGHT_ARM });
 
-            var materialCharacteristic = Workspace.Characteristics.Material % 8;
+            var materialCharacteristic = Workspace.Characteristics.Material % 9;
 
 
             TexturePattern bodyPattern = null;
@@ -135,20 +135,66 @@ namespace minecreator.api.Modules
                     leftarmPattern = herringbonePattern;
                     rightarmPattern = herringbonePattern;
                 }
-                else if (materialCharacteristic == 8) // flannel alt
+                else if (materialCharacteristic == 7) // flannel alt
+                {
+                    bodyPattern = PatternHelper.Flannel(patternSize, 1, new Point(0, 0), ColorHelper.DEFAULT_PALLETE.Colors);
+                    if (Configuration.Model == OutfitModel.SLIM)
                     {
-                        bodyPattern = PatternHelper.Flannel(patternSize, 1, new Point(0, 0), ColorHelper.DEFAULT_PALLETE.Colors);
-                        if (Configuration.Model == OutfitModel.SLIM)
-                        {
-                            leftarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(0, 1), ColorHelper.DEFAULT_PALLETE.Colors);
-                            rightarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
-                        }
-                        else
-                        {
-                            leftarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
-                            rightarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
-                        }
+                        leftarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(0, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                        rightarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
                     }
+                    else
+                    {
+                        leftarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                        rightarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
+                    }
+                }
+                else if (materialCharacteristic == 8)
+                {
+                    var stripes = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
+                    .Take(Configuration.Colors.Count)
+                    .OrderBy(c =>
+                    {
+                        int colorKey = c.R | (c.G << 8) | (c.B << 16);
+                        return (Workspace.Characteristics.BaseDecoration ^ colorKey).GetHashCode();
+                    })
+                    .ToList();
+
+                    var stripespattern = new List<int>();
+                    int h = (int)Workspace.Characteristics.Hash;
+
+                    int maxPossibleColors = Math.Max(1, Configuration.Colors.Count);
+                    int stripesCount = 2 + (Math.Abs(h) % maxPossibleColors);
+
+                    for (int i = 0; i < stripesCount; i++)
+                    {
+                        int width = (Math.Abs(h ^ (i * 137)) % 2) + 1;
+                        stripespattern.Add(width);
+                    }
+                    if (stripes.Count > stripespattern.Count)
+                    {
+                        stripespattern = stripespattern.Slice(0, stripespattern.Count).ToList();
+                    }
+                    var stripesPattern = PatternHelper.VerticalStripes(patternSize, new Point(0, 0), stripespattern, stripes);
+                    bodyPattern = stripesPattern;
+
+                    stripesPattern.Texture.ProcessPixelRows(accessor =>
+                    {
+                        for (int y = 0; y < 4; y++)
+                        {
+                            var row = accessor.GetRowSpan(y);
+                            for (int x = 0; x < row.Length; x++)
+                            {
+                                if (row[x].A == 0)
+                                    continue;
+                                row[x] = ColorHelper.DEFAULT_PALLETE.BaseColor;
+                            }
+                        }
+                    });
+
+                    leftarmPattern = stripesPattern;
+                    rightarmPattern = stripesPattern;
+                }
             }
 
             var fronttexture = ModuleHelper.ProcessTexturePart(Workspace.Texture.GetFullPart(TextureMapPart.BODY), Workspace.Characteristics, bodyPattern, ProcessMainBodyPart);

@@ -20,7 +20,7 @@ namespace minecreator.api.Modules
             Workspace.Texture.CopyParts(Workspace.BaseTexture, new List<TextureMapPart>() { TextureMapPart.RIGHT_LEG, TextureMapPart.LEFT_LEG });
 
             var patterndimensions = new Point(Workspace.Texture.GetPart(TextureMapPart.LEFT_LEG).Width, Workspace.Texture.GetPart(TextureMapPart.LEFT_LEG).Height);
-            var materialCharacteristic = Workspace.Characteristics.Material % 5;
+            var materialCharacteristic = Workspace.Characteristics.Material % 6;
 
             TexturePattern leftlegpattern = null;
             TexturePattern rightlegpattern = null;
@@ -71,10 +71,41 @@ namespace minecreator.api.Modules
                     rightlegpattern = herringbonePattern;
 
 
-                } else if (materialCharacteristic == 4) // flannel alt
+                }
+                else if (materialCharacteristic == 4) // flannel alt
                 {
                     leftlegpattern = PatternHelper.Flannel(patterndimensions, 1, new Point(0, 0), ColorHelper.DEFAULT_PALLETE.Colors);
                     rightlegpattern = leftlegpattern;
+                }
+                else if (materialCharacteristic == 5)
+                {
+                    var stripes = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
+                   .Take(Configuration.Colors.Count)
+                   .OrderBy(c =>
+                   {
+                       int colorKey = c.R | (c.G << 8) | (c.B << 16);
+                       return (Workspace.Characteristics.BaseDecoration ^ colorKey).GetHashCode();
+                   })
+                   .ToList();
+                    var stripespattern = new List<int>();
+                    int h = (int)Workspace.Characteristics.Hash;
+
+                    int maxPossibleColors = Math.Max(1, Configuration.Colors.Count);
+                    int stripesCount = 2 + (Math.Abs(h) % maxPossibleColors);
+
+                    for (int i = 0; i < stripesCount; i++)
+                    {
+                        int width = (Math.Abs(h ^ (i * 137)) % 2) + 1;
+                        stripespattern.Add(width);
+                    }
+                    if (stripes.Count > stripespattern.Count)
+                    {
+                        stripespattern = stripespattern.Slice(0, stripespattern.Count).ToList();
+                    }
+                    var stripesPattern = PatternHelper.VerticalStripes(patterndimensions, new Point(0, 0), stripespattern, stripes);
+                    leftlegpattern = stripesPattern;
+                    rightlegpattern = stripesPattern;
+
                 }
             }
 

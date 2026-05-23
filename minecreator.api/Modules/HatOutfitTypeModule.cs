@@ -1,4 +1,5 @@
-﻿using minecreator.api.Model;
+﻿using minecreator.api.Helpers;
+using minecreator.api.Model;
 
 namespace minecreator.api.Modules
 {
@@ -12,27 +13,47 @@ namespace minecreator.api.Modules
 
         public override TextureMap GenerateAccessories()
         {
-            throw new NotImplementedException();
+            return Workspace.AccessoryTexture;
         }
 
         public override TextureMap GenerateAccessoryTexture()
         {
-            throw new NotImplementedException();
+            return Workspace.AccessoryTexture;
         }
 
         public override TextureMap GenerateBaseTexture()
         {
-            throw new NotImplementedException();
+            Workspace.Texture.CopyParts(Workspace.BaseTexture, new List<TextureMapPart>() { TextureMapPart.HEAD });
+            return Workspace.BaseTexture;
         }
 
         public override TextureMap GenerateColoredTexture()
         {
-            throw new NotImplementedException();
+            return Workspace.Texture;
         }
 
         public override TextureMap GenerateDetailsTexture()
         {
-            throw new NotImplementedException();
+            if (Configuration.Style == OutfitStyle.WINTER)
+            {
+                var texture = TextureManupulationHelper.CopyOnlyWithPallete(Workspace.Texture.Texture, new List<SixLabors.ImageSharp.PixelFormats.Rgba32>()
+                {
+                    ColorHelper.DEFAULT_PALLETE.Colors[ColorHelper.PalleteColorSize-1],
+                    ColorHelper.DEFAULT_PALLETE.Colors[ColorHelper.PalleteColorSize-2],
+                });
+                Workspace.DetailsTexture.SetOuterPart(TextureMapPart.HEAD, texture);
+            }
+            else
+            {
+                var border = TextureManupulationHelper.DetectOutline(Workspace.Texture.Texture, false, true, false, false, 1);
+                var img = Workspace.DetailsTexture.GetOuterPart(TextureMapPart.HEAD);
+                TextureManupulationHelper.CopyRectangles(img, Workspace.Texture.Texture, border);
+                Workspace.DetailsTexture.SetOuterPart(TextureMapPart.HEAD, img);
+            }
+
+
+
+            return Workspace.DetailsTexture;
         }
     }
 }

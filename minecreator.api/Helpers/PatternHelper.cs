@@ -481,6 +481,45 @@ namespace minecreator.api.Helpers
                 BlendType = TexturePatternBlendType.BrightnessMap
             };
         }
+        public static TexturePattern VerticalStripes(Point dimensions, Point offset, List<int> stripesWidths, List<Rgba32> colors)
+        {
+            var image = new Image<Rgba32>(dimensions.X, dimensions.Y);
+            int totalWidth = stripesWidths.Sum();
+
+            for (int x = 0; x < dimensions.X; x++)
+            {
+                int currentX = totalWidth == 0 ? 0 : (x + offset.X) % totalWidth;
+                if (currentX < 0) currentX += totalWidth;
+
+                int stripeIndex = 0;
+                int accumulatedWidth = 0;
+
+                for (int i = 0; i < stripesWidths.Count; i++)
+                {
+                    accumulatedWidth += stripesWidths[i];
+                    if (currentX < accumulatedWidth)
+                    {
+                        stripeIndex = Math.Min(i, colors.Count - 1);
+                        break;
+                    }
+                }
+
+                var color = colors[0];
+                if (stripeIndex < colors.Count)
+                    color = colors[stripeIndex];
+
+                for (int y = 0; y < dimensions.Y; y++)
+                {
+                    image[x, y] = color;
+                }
+            }
+
+            return new TexturePattern()
+            {
+                Texture = image,
+                BlendType = TexturePatternBlendType.BrightnessMap
+            };
+        }
     }
 
 }

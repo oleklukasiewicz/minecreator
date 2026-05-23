@@ -1,4 +1,5 @@
-﻿using minecreator.api.Accessories;
+﻿using System.Reflection;
+using minecreator.api.Accessories;
 using minecreator.api.Model;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -13,16 +14,16 @@ namespace minecreator.api.Helpers
     }
     public static class AccessoriesHelper
     {
-        private static List<OutfitAccessoryItem> _accessories = new List<OutfitAccessoryItem>()
+        private static List<OutfitAccessoryItem> _accessories;
+
+        static AccessoriesHelper()
         {
-            new CreeperPatch(),
-            new RosePatch(),
-            new DuckPatch(),
-            new MccPatch(),
-            new CookiePatch(),
-            new BaseButtonsAccessory(),
-            new ContractButtonsAccessory(),
-        };
+            var accessoryType = typeof(OutfitAccessoryItem);
+            var types = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => accessoryType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract && t != accessoryType);
+
+            _accessories = types.Select(t => (OutfitAccessoryItem)Activator.CreateInstance(t)).ToList();
+        }
         public static List<OutfitAccessoryItem> GetAccessoriesForLocation(OutfitAccessoryLocation location, OutfitStyle style)
         {
             return _accessories.Where(a => a.Type == location.Type && a.Size.X <= location.Location.Width && a.Size.Y <= location.Location.Height && (a.Styles.Count() == 0 || a.Styles.Contains(style))).ToList();

@@ -1,4 +1,5 @@
-﻿using minecreator.api.Bases.Top.Casual;
+﻿using System.Reflection;
+using minecreator.api.Bases.Top.Casual;
 using minecreator.api.BaseTextures.Bottom.Casual;
 using minecreator.api.BaseTextures.Shoes.Casual;
 using minecreator.api.Model;
@@ -9,14 +10,16 @@ namespace minecreator.api.Helpers
 {
     public static class BaseTextureHelper
     {
-        private static List<BaseTexture> baseTextures = new List<BaseTexture>()
+        private static List<BaseTexture> baseTextures;
+
+        static BaseTextureHelper()
         {
-            new ClassicTopCasualBaseTexture(),
-            new SlimTopCasualBaseTexture(),
-            new BottomCasualBaseTexture(),
-            new ShoesCasualBaseTexture(),
-            new ShoesCasualAltBaseTexture()
-        };
+            var baseType = typeof(BaseTexture);
+            var types = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => baseType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract && t != baseType);
+
+            baseTextures = types.Select(t => (BaseTexture)Activator.CreateInstance(t)).ToList();
+        }
         public static TextureMap? LoadBaseTexture(OutfitStyle style, OutfitType type, OutfitModel model, int hash=1)
         {
             BaseTexture baseTexture;
