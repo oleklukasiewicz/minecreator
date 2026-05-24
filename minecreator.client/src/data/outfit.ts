@@ -50,6 +50,7 @@ export class Outfit {
   seed: string;
   accessories: string[];
   samples: number = 1;
+  preview?: string;
 
   constructor(
     id: string = "",

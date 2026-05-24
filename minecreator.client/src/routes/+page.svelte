@@ -1,6 +1,11 @@
 <script lang="ts">
   import { ExportConfig } from "$data/export";
-  import { currentOutfits, currentSkinModel, currentVersion, IS_MOBILE_VIEW } from "$data/global";
+  import {
+    currentOutfits,
+    currentSkinModel,
+    currentVersion,
+    IS_MOBILE_VIEW,
+  } from "$data/global";
   import { ImportConfig, ImportConfigFromFile } from "$data/import";
   import { GAME_VERSION, Outfit, SKIN_MODEL } from "$data/outfit";
   import { ValueData } from "$src/helpers/dataHelper";
@@ -21,15 +26,24 @@
   import OutfitPackageRender from "$lib/components/render/OutfitPackageRender.svelte";
   import { MODEL_TYPE } from "$src/data/enums/model";
   import DefaultAnimation from "$src/animation/default";
-  import { GenerateOutfits, GetConfiguration } from "$src/data/api";
+  import {
+    GenerateOutfits,
+    GetConfiguration,
+    PreviewOutfits,
+  } from "$src/data/api";
   import { Configuration } from "$src/data/config";
-  import type { ExportModel } from "$src/data/models/export";
+  import { ExportModel } from "$src/data/models/export";
   import { goto } from "$app/navigation";
 
   let currentLocale = $state<string>("en");
   let outfitDialogOpen = $state(false);
 
   let selectedOutfit = $state<Outfit | null>(null);
+  const previewDebounceTimers = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+  >();
+  const previewRequestVersions = new Map<string, number>();
 
   const translatedGameVersions = $derived(
     GAME_VERSION.map(
@@ -73,11 +87,12 @@
     selectedOutfit = newOutfit;
     if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
   };
-  const setSelectedOutfit = function (outfit: Outfit) {
+  const setSelectedOutfit = async function (outfit: Outfit) {
     selectedOutfit = outfit;
     if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
+    queuePreviewGeneration(outfit);
   };
-  const updateSelectedOutfit = function (updatedOutfit: Outfit) {
+  const updateSelectedOutfit = async function (updatedOutfit: Outfit) {
     if (!selectedOutfit) return;
 
     const updated = Object.assign(new Outfit(), selectedOutfit, updatedOutfit);
@@ -85,6 +100,62 @@
       outfits.map((o) => (o.id === updated.id ? updated : o)),
     );
     selectedOutfit = updated;
+    queuePreviewGeneration(updated);
+  };
+  const queuePreviewGeneration = function (outfit: Outfit) {
+    if (!outfit?.id) return;
+
+    const timer = previewDebounceTimers.get(outfit.id);
+    if (timer) clearTimeout(timer);
+
+    previewDebounceTimers.set(
+      outfit.id,
+      setTimeout(() => {
+        void generatePreview(outfit);
+      }, 200),
+    );
+  };
+  const generatePreview = async function (outfit: Outfit) {
+    if (!outfit?.id) return;
+
+    const requestVersion = (previewRequestVersions.get(outfit.id) ?? 0) + 1;
+    previewRequestVersions.set(outfit.id, requestVersion);
+
+    const outfitSnapshot = Object.assign(new Outfit(), outfit);
+
+    try {
+      const preview = await PreviewOutfits(
+        new ExportModel($currentSkinModel, $currentVersion, [outfitSnapshot]),
+      );
+
+      // Ignore stale responses when a newer request for this outfit already exists.
+      if (previewRequestVersions.get(outfit.id) !== requestVersion) return;
+
+      const previewImage = preview?.outfits?.[0]?.image;
+
+      currentOutfits.update((outfits) =>
+        outfits.map((o) =>
+          o.id === outfit.id
+            ? Object.assign(new Outfit(), o, outfitSnapshot, {
+                preview: previewImage,
+              })
+            : o,
+        ),
+      );
+
+      if (selectedOutfit?.id === outfit.id) {
+        selectedOutfit = Object.assign(
+          new Outfit(),
+          selectedOutfit,
+          outfitSnapshot,
+          {
+            preview: previewImage,
+          },
+        );
+      }
+    } catch (err) {
+      console.error("Preview generation failed", err);
+    }
   };
   const ExportData = async function () {
     await ExportConfig($currentOutfits, $currentSkinModel);
@@ -95,6 +166,7 @@
       currentOutfits.update((outfits) => [...data, ...outfits]);
       if (data.length > 0) {
         selectedOutfit = $currentOutfits[0];
+        queuePreviewGeneration(selectedOutfit);
         if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
       }
     }
@@ -106,6 +178,7 @@
       currentOutfits.update((outfits) => [...data, ...outfits]);
       if (data.length > 0) {
         selectedOutfit = $currentOutfits[0];
+        queuePreviewGeneration(selectedOutfit);
         if ($IS_MOBILE_VIEW) outfitDialogOpen = true;
       }
     }
@@ -251,6 +324,16 @@
                 onUpdate={updateSelectedOutfit}
                 {configuration}
               />
+              {#if selectedOutfit?.preview != null}
+                <OutfitPackageRender
+                  resizable={true}
+                  isDynamic={true}
+                  source={"data:image/png;base64," + selectedOutfit.preview}
+                  model={$currentSkinModel === "classic"
+                    ? MODEL_TYPE.STEVE
+                    : MODEL_TYPE.ALEX}
+                />
+              {/if}
             {/if}
           </div>
         </div>

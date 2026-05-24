@@ -33,7 +33,7 @@ namespace minecreator.api.Model
 
     public class OutfitConfiguration
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public OutfitType Type { get; set; }
         public OutfitStyle Style { get; set; }

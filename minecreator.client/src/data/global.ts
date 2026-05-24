@@ -34,3 +34,14 @@ export const currentVersion: Writable<string> = propertyStore(
   currentExport,
   "gameVersion",
 );
+export const debounce = function (
+  callback: (...args: any[]) => void,
+  timeout: number,
+) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return (...args: any[]) => {
+    if (timer !== undefined) clearTimeout(timer);
+    timer = setTimeout(() => callback(...args), timeout);
+  };
+};
+

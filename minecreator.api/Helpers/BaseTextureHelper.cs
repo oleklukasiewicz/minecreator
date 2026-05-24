@@ -29,7 +29,7 @@ namespace minecreator.api.Helpers
                 baseTexture = found[hash % found.Count()];
             }
             else
-                baseTexture = found.FirstOrDefault();
+                baseTexture = found?.FirstOrDefault();
 
             if (baseTexture == null)
             {
