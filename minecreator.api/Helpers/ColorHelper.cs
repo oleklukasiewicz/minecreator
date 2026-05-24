@@ -358,5 +358,10 @@ namespace minecreator.api.Helpers
             }
             return dominantColor;
         }
+        public static float GetHueDistance(float hue1, float hue2)
+        {
+            float diff = Math.Abs(hue1 - hue2) % 360;
+            return diff > 180 ? 360 - diff : diff;
+        }
     }
 }

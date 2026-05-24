@@ -73,6 +73,7 @@ export class Outfit {
   }
   ToExportModel(): any {
     return {
+      id: this.id,
       name: this.name,
       type: this.type,
       style: this.style,

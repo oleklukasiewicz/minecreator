@@ -29,7 +29,7 @@
     display: grid;
     padding: 12px;
     box-sizing: border-box;
-    grid-template-columns: minmax(200px, 25%) minmax(200px, 25%) 1fr minmax(
+    grid-template-columns: minmax(200px, 25%) minmax(200px, 25%) minmax(200px, 25%) 1fr minmax(
         200px,
         25%
       );
@@ -61,10 +61,9 @@
     #items-tools {
       display: grid;
       gap: 4px;
-      grid-template-columns: 1fr minmax(120px, 15%) minmax(
-          120px,
-          15%
-        ) 10px minmax(150px, 25%);
+      grid-template-columns:
+        1fr minmax(120px, 15%) minmax(120px, 15%)
+        10px minmax(150px, 25%);
     }
 
     #no-outfits {
@@ -79,7 +78,7 @@
     #items-content {
       display: grid;
       gap: 12px;
-      grid-template-columns: minmax(150px, 33%) 1fr;
+      grid-template-columns: minmax(100px, 25%) 1fr;
       align-items: flex-start;
 
       #items-list {
@@ -90,7 +89,7 @@
       #items-preview {
         display: flex;
         flex-direction: row;
-        gap: 8px;
+        gap: 12px;
       }
     }
   }
@@ -124,6 +123,14 @@
           width: 0;
           height: 0;
           overflow: visible;
+          #mobile-preview-content {
+            display: table;
+            width: 100%;
+            min-height: 0;
+            gap: 12px;
+            padding-bottom: 64px;
+            box-sizing: border-box;
+          }
         }
       }
     }

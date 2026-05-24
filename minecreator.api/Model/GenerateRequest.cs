@@ -5,6 +5,8 @@ namespace minecreator.api.Model
     public class GenerateRequest
     {
         public string Model { get; set; }
+        public string GameVersion { get; set; }
+        public bool GenerateSets { get; set; }
         public List<OutfitConfigurationModel> Outfits { get; set; }
     }
     public class OutfitConfigurationModel

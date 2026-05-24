@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ExportConfig } from "$data/export";
   import {
+    currentGenerateSets,
     currentOutfits,
     currentSkinModel,
     currentVersion,
@@ -34,6 +35,7 @@
   import { Configuration } from "$src/data/config";
   import { ExportModel } from "$src/data/models/export";
   import { goto } from "$app/navigation";
+  import Checkbox from "$lib/components/base/Checkbox/Checkbox.svelte";
 
   let currentLocale = $state<string>("en");
   let outfitDialogOpen = $state(false);
@@ -198,8 +200,6 @@
     currentLocale = payload.item.value;
     setAppLocale(payload.item.value);
   };
-  let previewComponent = $state<any>(null);
-  let generatedOutfits = $state<string>("");
 
   const generateOutfits = async function () {
     goto("/generated");
@@ -208,6 +208,16 @@
   $effect(() => {
     const activeLocale = $locale ?? "en";
     if (currentLocale !== activeLocale) currentLocale = activeLocale;
+  });
+  currentVersion.subscribe((v) => {
+    if (selectedOutfit) {
+      queuePreviewGeneration(selectedOutfit);
+    }
+  });
+  currentSkinModel.subscribe((v) => {
+    if (selectedOutfit) {
+      queuePreviewGeneration(selectedOutfit);
+    }
   });
 </script>
 
@@ -244,6 +254,14 @@
         itemText="label"
         itemValue="value"
         placeholder={$_("page.skinModelPlaceholder")}
+      />
+    </div>
+    <div class="option-select">
+      <SectionTitle label={$_("page.sets")} />
+      <Checkbox
+        label={$_("options.randomizeColors")}
+        bind:value={$currentGenerateSets}
+        style="margin-top: 4px;"
       />
     </div>
     <div></div>
@@ -312,11 +330,23 @@
                   $_("outfitPreview.noOutfitSelected")}
                 onclose={() => (outfitDialogOpen = false)}
               >
-                <OutfitPreview
-                  outfit={selectedOutfit}
-                  onUpdate={updateSelectedOutfit}
-                  {configuration}
-                />
+                <div id="mobile-preview-content">
+                  {#if selectedOutfit?.preview != null}
+                    <OutfitPackageRender
+                      resizable={true}
+                      isDynamic={true}
+                      source={"data:image/png;base64," + selectedOutfit.preview}
+                      model={$currentSkinModel === "classic"
+                        ? MODEL_TYPE.STEVE
+                        : MODEL_TYPE.ALEX}
+                    />
+                  {/if}
+                  <OutfitPreview
+                    outfit={selectedOutfit}
+                    onUpdate={updateSelectedOutfit}
+                    {configuration}
+                  />
+                </div>
               </Dialog>
             {:else}
               <OutfitPreview
@@ -325,14 +355,22 @@
                 {configuration}
               />
               {#if selectedOutfit?.preview != null}
-                <OutfitPackageRender
-                  resizable={true}
-                  isDynamic={true}
-                  source={"data:image/png;base64," + selectedOutfit.preview}
-                  model={$currentSkinModel === "classic"
-                    ? MODEL_TYPE.STEVE
-                    : MODEL_TYPE.ALEX}
-                />
+                <div
+                  style="aspect-ratio: 1; display:table;text-align:left;margin-top:12px; width: 100%;height: 100%;"
+                >
+                  <SectionTitle
+                    label={$_("outfitPreview.preview")}
+                    style={"margin-bottom:8px"}
+                  />
+                  <OutfitPackageRender
+                    resizable={true}
+                    isDynamic={true}
+                    source={"data:image/png;base64," + selectedOutfit.preview}
+                    model={$currentSkinModel === "classic"
+                      ? MODEL_TYPE.STEVE
+                      : MODEL_TYPE.ALEX}
+                  />
+                </div>
               {/if}
             {/if}
           </div>

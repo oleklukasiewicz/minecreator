@@ -1,8 +1,8 @@
 <script lang="ts">
-  let { label }: { label: string } = $props();
+  let { label,style }: { label: string; style?: string } = $props();
 </script>
 
-<span class="section-title">
+<span class="section-title" style={style}>
   {label}
 </span>
 

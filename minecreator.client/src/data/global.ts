@@ -34,6 +34,10 @@ export const currentVersion: Writable<string> = propertyStore(
   currentExport,
   "gameVersion",
 );
+export const currentGenerateSets: Writable<boolean> = propertyStore(
+  currentExport,
+  "generateSets",
+);
 export const debounce = function (
   callback: (...args: any[]) => void,
   timeout: number,

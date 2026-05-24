@@ -14,7 +14,8 @@
     "export": "Eksport",
     "import": "Import",
     "newOutfit": "Nowe ubranie",
-    "noOutfits": "Brak ubrań"
+    "noOutfits": "Brak ubrań",
+    "sets": "Zestawy"
   },
   "outfitListItem": {
     "unnamed": "Nienazwane ubranie"
@@ -36,7 +37,8 @@
     "seedPlaceholder": "Ziarno ubrania",
     "samples": "Przykłady",
     "samplesPlaceholder": "Wybierz liczbę przykładów",
-    "noOutfitSelected": "Nie wybrano ubrania"
+    "noOutfitSelected": "Nie wybrano ubrania",
+    "preview": "Podgląd"
   },
   "colorPicker": {
     "hexPlaceholder": "Kolor HEX",
@@ -78,6 +80,7 @@
       "images": "Nadruk",
       "pins": "Przypinki",
       "buttons": "Guziki"
-    }
+    },
+    "randomizeColors": "Generuj Zestawy"
   }
 }

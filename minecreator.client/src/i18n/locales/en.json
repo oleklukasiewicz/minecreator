@@ -14,7 +14,8 @@
     "export": "Export",
     "import": "Import",
     "newOutfit": "New outfit",
-    "noOutfits": "No outfits"
+    "noOutfits": "No outfits",
+    "sets": "Sets"
   },
   "outfitListItem": {
     "unnamed": "Unnamed Outfit"
@@ -36,7 +37,8 @@
     "seedPlaceholder": "Outfit Seed",
     "samples": "Samples",
     "samplesPlaceholder": "Select number of samples",
-    "noOutfitSelected": "No outfit selected"
+    "noOutfitSelected": "No outfit selected",
+    "preview": "Preview"
   },
   "colorPicker": {
     "hexPlaceholder": "Hex color",
@@ -78,6 +80,7 @@
       "images": "Print",
       "pins": "Pins",
       "buttons": "Buttons"
-    }
+    },
+    "randomizeColors": "Generate Sets"
   }
 }

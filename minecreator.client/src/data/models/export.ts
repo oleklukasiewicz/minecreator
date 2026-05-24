@@ -3,11 +3,13 @@ import type { Outfit } from "../outfit";
 export class ExportModel {
   model: string;
   gameVersion: string;
+  generateSets: boolean = false;
   outfits: Outfit[];
 
   constructor(model: string, gameVersion: string, outfits: Outfit[]) {
     this.model = model;
     this.gameVersion = gameVersion;
+    this.generateSets = false;
     this.outfits = outfits;
   }
 }

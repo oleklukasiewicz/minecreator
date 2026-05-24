@@ -41,7 +41,7 @@ namespace minecreator.api.Model
         {
             Configuration = config;
             Workspace = new OutfitModuleWorkspace();
-            Workspace.Characteristics = new OutfityTypeCharacteristics(Configuration.Seed, config.Style);
+            Workspace.Characteristics = new OutfityTypeCharacteristics(Configuration.Seed, config.Style,config.Samples);
             Workspace.BaseTexture = BaseTextureHelper.LoadBaseTexture(Configuration.Style, Configuration.Type, Configuration.Model, Workspace.Characteristics.Material);
 
             var userColorsPallets = new List<ColorPallete>();

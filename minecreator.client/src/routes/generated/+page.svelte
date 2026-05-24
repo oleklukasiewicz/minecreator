@@ -4,6 +4,7 @@
   import { GenerateOutfits } from "$src/data/api";
   import { MODEL_TYPE } from "$src/data/enums/model";
   import {
+    currentGenerateSets,
     currentOutfits,
     currentSkinModel,
     currentVersion,
@@ -22,7 +23,9 @@
   let isLoading = $state(true);
   let loadError = $state<string | null>(null);
 
-  const selectedRender = $derived(generatedOutfits[selectedRenderIndex] ?? null);
+  const selectedRender = $derived(
+    generatedOutfits[selectedRenderIndex] ?? null,
+  );
 
   const getRenderLabel = (outfit: GeneratedOutfit, index: number) => {
     if (outfit.name && outfit.name.trim().length > 0) return outfit.name;
@@ -37,6 +40,7 @@
     }
     const json = {
       model: $currentSkinModel,
+      generateSets: $currentGenerateSets,
       gameVersion: $currentVersion,
       outfits: $currentOutfits.map((o) => o.ToExportModel()),
     } as ExportModel;
@@ -47,9 +51,13 @@
 
       const generated = await GenerateOutfits(json);
       generatedOutfits = (generated?.outfits ?? []) as GeneratedOutfit[];
+      const generatedSets =
+        generated?.sets ?? ([] as GeneratedOutfit[]);
+      generatedOutfits = generatedOutfits.concat(generatedSets);
       selectedRenderIndex = 0;
     } catch (error) {
-      loadError = error instanceof Error ? error.message : "Failed to generate outfits.";
+      loadError =
+        error instanceof Error ? error.message : "Failed to generate outfits.";
       generatedOutfits = [];
       selectedRenderIndex = 0;
     } finally {

@@ -100,6 +100,8 @@ namespace minecreator.api.Helpers
                 if (selectedAccessory.IsForGeneration && selectedAccessory.Type == OutfitAccessory.BUTTONS)
                 {
                     var buttonsSpacing = ((int)workspace.Characteristics.Hash % 3) + 2;
+                    if (buttonsSpacing < 2)
+                        buttonsSpacing = 2;
                     var buttonsTexture = new Image<Rgba32>(location.Location.Width, location.Location.Height);
 
                     for (int y = 1; y < buttonsTexture.Height; y += buttonsSpacing)

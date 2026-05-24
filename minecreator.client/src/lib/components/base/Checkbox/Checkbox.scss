@@ -1,0 +1,22 @@
+.checkbox {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px var(--color-theme-D6);
+  &.selected {
+    background-color: var(--color-accent);
+    color: var(--color-accent-font);
+    box-shadow: none;
+  }
+}
+.checkbox-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  & > span {
+    color: var(--color-theme-D6);
+    font-size: var(--size-font-subheaderalt);
+    padding: 4px 3px;
+    user-select: none;
+  }
+}

@@ -23,7 +23,6 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <a class="outfit-list-item" class:selected {onclick}>
-  <div class="preview"></div>
   <div class="data">
     <b>{outfit?.name?.length == 0 ? "Unnamed Outfit" : outfit?.name}</b>
     <div>
@@ -52,7 +51,7 @@
     box-sizing: border-box;
     display: grid;
     gap: 12px;
-    grid-template-columns: 50px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     cursor: pointer;
     user-select: none;
     overflow: hidden;
@@ -66,10 +65,6 @@
     &.selected {
       background-color: var(--color-accent);
       color: var(--color-accent-font);
-    }
-    .preview {
-      aspect-ratio: 1;
-      background-color: var(--color-theme-D1);
     }
     .data {
       display: flex;

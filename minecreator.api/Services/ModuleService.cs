@@ -1,6 +1,7 @@
 ﻿using minecreator.api.Helpers;
 using minecreator.api.Model;
 using minecreator.api.Model.Interface;
+using SixLabors.ImageSharp.ColorSpaces.Conversion;
 
 namespace minecreator.api.Services
 {
@@ -10,6 +11,9 @@ namespace minecreator.api.Services
         Dictionary<OutfitType, OutfitModuleOptions> GetModulesOptions();
         void RegisterModule(OutfitType type, IOutfitModule module);
         TextureMap GenerateTexture(OutfitConfiguration config);
+        public ModuleOutfitsResult GenerateOutfits(OutfitConfiguration config);
+        public List<TextureMap> GenerateSets(List<ModuleOutfitsResult> outfits);
+        public TextureMap GenerateFlatTexture(TextureMap textureMap);
     }
 
     public class ModuleService : IModuleService
@@ -61,6 +65,143 @@ namespace minecreator.api.Services
             module.GenerateAccessories();
             var result = module.MergeTextures(true, true);
             return result;
+        }
+        public ModuleOutfitsResult GenerateOutfits(OutfitConfiguration config)
+        {
+            var samples = config.Samples;
+            if (samples <= 0) samples = 1;
+
+            var result = new ModuleOutfitsResult();
+            result.OutfitId = config.Id;
+            result.Type = config.Type;
+
+            for (int i = 0; i < samples; i++)
+            {
+                var configforSample = config;
+                config.Samples = i;
+                var textureMap = GenerateTexture(configforSample);
+                result.Samples.Add(textureMap);
+            }
+            return result;
+        }
+        public TextureMap GenerateFlatTexture(TextureMap textureMap)
+        {
+            var texture = new TextureMap();
+            texture.CopyParts(textureMap, new List<TextureMapPart>
+                    {
+                        TextureMapPart.HEAD
+                    });
+            var partsToMerge = new List<TextureMapPart>()
+                    {
+                        TextureMapPart.BODY,
+                        TextureMapPart.LEFT_ARM,
+                        TextureMapPart.RIGHT_ARM,
+                        TextureMapPart.LEFT_LEG,
+                        TextureMapPart.RIGHT_LEG
+                    };
+            foreach (var part in partsToMerge)
+            {
+                var innerpart = textureMap.GetPart(part);
+                var outerpart = textureMap.GetOuterPart(part);
+
+                var merged = TextureManupulationHelper.Merge(innerpart, outerpart);
+                texture.SetPart(part, merged);
+            }
+
+            return texture;
+        }
+        public List<TextureMap> GenerateSets(List<ModuleOutfitsResult> outfits)
+        {
+            OutfitType primaryOutfitType;
+            var results = new List<TextureMap>();
+            var typeOrderForPicking = new List<OutfitType>
+    {
+        OutfitType.TOP,
+        OutfitType.BOTTOM,
+        OutfitType.HAT,
+        OutfitType.SHOES
+    };
+
+            primaryOutfitType = typeOrderForPicking
+                .AsEnumerable()
+                .FirstOrDefault(type => outfits.Any(x => x.Type == type));
+
+            var primaryOutfits = outfits.Where(x => x.Type == primaryOutfitType).ToList();
+
+            foreach (var primary in primaryOutfits)
+            {
+                var textures = primary.Samples;
+                foreach (var texture in textures)
+                {
+                    var dominantColor = ColorHelper.GetDominant(texture.Texture);
+                    var dominantHue = ColorSpaceConverter.ToHsl(dominantColor).H;
+                    float complementaryHue = (dominantHue + 180) % 360;
+
+                    var dominatFromOthers = outfits
+                      .Where(x => x.Type != primaryOutfitType)
+                      .SelectMany(x => x.Samples, (parent, sample) => new
+                      {
+                          Type = parent.Type,
+                          texture = sample.Texture,
+                          color = ColorHelper.GetDominant(sample.Texture)
+                      })
+                      .ToList();
+
+                    var mostSimilarColorsPerType = dominatFromOthers
+                        .GroupBy(c => c.Type)
+                        .Select(group => group
+                            .OrderBy(c => ColorHelper.GetHueDistance(ColorSpaceConverter.ToHsl(c.color).H, dominantHue))
+                            .First()
+                        )
+                        .ToList();
+
+                    var mostComplementaryColorsPerType = dominatFromOthers
+                        .GroupBy(c => c.Type)
+                        .Select(group => group
+                            .OrderBy(c => ColorHelper.GetHueDistance(ColorSpaceConverter.ToHsl(c.color).H, complementaryHue))
+                            .First()
+                        )
+                        .ToList();
+
+                    var typeOrder = new List<OutfitType>
+            {
+                OutfitType.BOTTOM,
+                OutfitType.SHOES,
+                OutfitType.TOP,
+                OutfitType.HAT
+            };
+
+                    var orderedSimilar = mostSimilarColorsPerType
+                        .OrderBy(x => typeOrder.IndexOf(x.Type))
+                        .ToList();
+
+                    if (orderedSimilar.Any())
+                    {
+                        var currentTexture = texture.Texture.Clone();
+                        foreach (var item in orderedSimilar)
+                        {
+                            currentTexture = TextureManupulationHelper.Merge(currentTexture, item.texture);
+                        }
+                        results.Add(new TextureMap { Texture = currentTexture });
+                    }
+
+                    var orderedComplementary = mostComplementaryColorsPerType
+                        .OrderBy(x => typeOrder.IndexOf(x.Type))
+                        .ToList();
+
+                    if (orderedComplementary.Any())
+                    {
+                        var currentTexture = texture.Texture.Clone();
+                        foreach (var item in orderedComplementary)
+                        {
+                            currentTexture = TextureManupulationHelper.Merge(currentTexture, item.texture);
+                        }
+                        results.Add(new TextureMap { Texture = currentTexture });
+                    }
+                }
+            }
+
+            return results;
         }
     }
 }

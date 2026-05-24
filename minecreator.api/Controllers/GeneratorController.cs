@@ -30,29 +30,57 @@ namespace minecreator.api.Controllers
         public async Task<IActionResult> Generate([FromBody] GenerateRequest request)
         {
             var list = new List<OutfitConfiguration>();
-            var response = new List<GenerateResponse>();
             foreach (var item in request.Outfits)
             {
                 list.Add(item.ToConfig(request.Model));
             }
-            byte[] image = null;
+
+            var modulesResults = new List<ModuleOutfitsResult>();
             foreach (var item in list)
             {
-                var result = _moduleService.GenerateTexture(item);
+                var results = _moduleService.GenerateOutfits(item);
+                modulesResults.AddRange(results);
+            }
+            var sets = new List<TextureMap>();
+            if (request.GenerateSets)
+            {
+                sets = _moduleService.GenerateSets(modulesResults);
+            }
 
-                var texture = result.ToBase64();
-
-                var stream = new MemoryStream();
-                result.Texture.SaveAsPng(stream);
-                image = stream.ToArray();
-                response.Add(new GenerateResponse()
+            var moduleTextures = new List<GenerateResponse>();
+            foreach (var item in modulesResults)
+            {
+                foreach (var sample in item.Samples)
                 {
-                    Config = item,
+                    var texture = sample.ToBase64();
+                    var stream = new MemoryStream();
+                    sample.Texture.SaveAsPng(stream);
+                    var image = stream.ToArray();
+                    moduleTextures.Add(new GenerateResponse()
+                    {
+                        Config = new OutfitConfiguration()
+                        {
+                            Id = item.OutfitId,
+                            Type = item.Type
+                        },
+                        Image = image
+                    });
+                }
+            }
+            var setsTextures = new List<GenerateResponse>();
+            foreach (var item in sets)
+            {
+                var texture = item.Texture;
+                var stream = new MemoryStream();
+                texture.SaveAsPng(stream);
+                var image = stream.ToArray();
+                setsTextures.Add(new GenerateResponse()
+                {
                     Image = image
                 });
-
             }
-            return Ok(new { outfits = response });
+
+            return Ok(new { outfits = moduleTextures, sets = setsTextures });
         }
         [HttpPost("preview")]
         public async Task<IActionResult> Preview([FromBody] GenerateRequest request)
@@ -63,6 +91,7 @@ namespace minecreator.api.Controllers
             byte[] image = null;
             foreach (var item in list)
             {
+                item.Samples = 0;
                 var result = _moduleService.GenerateTexture(item);
                 var texture = result.ToBase64();
                 var stream = new MemoryStream();
