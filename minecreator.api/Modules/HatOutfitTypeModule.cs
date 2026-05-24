@@ -110,103 +110,11 @@ namespace minecreator.api.Modules
                 headpattern = stripesPattern;
                 headpart = PatternHelper.ApplyPattern(headpart, stripesPattern);
 
-                //get rectangle of the head part
-                var sidesLastPixels = new Rectangle(0, 8, headpart.Width, 1);
-                var colors = new List<ColorPallete>();
-                headpart.ProcessPixelRows(accessor =>
-                {
-                    for (int y = sidesLastPixels.Y; y < sidesLastPixels.Y + sidesLastPixels.Height; y++)
-                    {
-                        var row = accessor.GetRowSpan(y);
-                        for (int x = sidesLastPixels.X; x < sidesLastPixels.X + sidesLastPixels.Width; x++)
-                        {
-                            var color = row[x];
-                            if (color.A == 0)
-                                continue;
-                            colors.Add(ColorHelper.GetPallete(color));
-                        }
-                    }
-                });
                 var topheadPart = headpart.Clone();
-                topheadPart.Mutate(x => x.Crop(new Rectangle(8, 0, 8, 8)));
 
-                int centerX = 3;
-                int centerY = 3;
+                topheadPart = TextureManupulationHelper.CenteredStripes(topheadPart, new Rectangle(0, 8, headpart.Width, 1), new Rectangle(8, 0, 8, 8));
 
-                var globalIndex = 0;
-                var sideIndex = 0;
-
-                foreach (var color in colors)
-                {
-                    if (globalIndex >= 32) break;
-
-                    int edgeX = 0;
-                    int edgeY = 0;
-
-                    if (globalIndex <= 7)
-                    {
-                        edgeX = 0;
-                        edgeY = sideIndex;
-                    }
-                    else if (globalIndex <= 15)
-                    {
-                        edgeX = sideIndex;
-                        edgeY = 0;
-                    }
-                    else if (globalIndex <= 23)
-                    {
-                        edgeX = 7;
-                        edgeY = 7 - sideIndex;
-                    }
-                    else
-                    {
-                        edgeX = 7 - sideIndex;
-                        edgeY = 7;
-                    }
-
-                    var pixelColor = topheadPart[edgeX, edgeY];
-                    if (pixelColor.A != 0)
-                    {
-                        var mappedColor = ColorHelper.MapToPallete(pixelColor, color);
-
-                        int x = edgeX;
-                        int y = edgeY;
-                        int dx = Math.Abs(centerX - x);
-                        int dy = Math.Abs(centerY - y);
-                        int sx = x < centerX ? 1 : -1;
-                        int sy = y < centerY ? 1 : -1;
-                        int err = dx - dy;
-
-                        while (true)
-                        {
-                            topheadPart[x, y] = mappedColor;
-
-                            if (x == centerX && y == centerY) break;
-
-                            int e2 = 2 * err;
-                            if (e2 > -dy)
-                            {
-                                err -= dy;
-                                x += sx;
-                            }
-                            if (e2 < dx)
-                            {
-                                err += dx;
-                                y += sy;
-                            }
-                        }
-                    }
-
-                    sideIndex++;
-                    globalIndex++;
-
-                    if (sideIndex == 8)
-                    {
-                        sideIndex = 0;
-                    }
-                }
-                headpart.Mutate(x => x.DrawImage(topheadPart, new Point(8, 0), new GraphicsOptions()));
-                Workspace.Texture.SetPart(TextureMapPart.HEAD, headpart);
+                Workspace.Texture.SetPart(TextureMapPart.HEAD, topheadPart);
             }
             return Workspace.BaseTexture;
         }

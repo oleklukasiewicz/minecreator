@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using minecreator.api.Model;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
@@ -283,6 +284,123 @@ namespace minecreator.api.Helpers
                 }
             });
             return result;
+        }
+        public static Image<Rgba32> CenteredStripes(
+       Image<Rgba32> sourceImage,
+       Rectangle paletteSourceRect,
+       Rectangle texturePartRect)
+        {
+            var colors = new List<ColorPallete>();
+
+            int startY = Math.Min(paletteSourceRect.Y, sourceImage.Height - 1);
+            int endY = Math.Min(paletteSourceRect.Bottom, sourceImage.Height);
+            int startX = Math.Min(paletteSourceRect.X, sourceImage.Width - 1);
+            int endX = Math.Min(paletteSourceRect.Right, sourceImage.Width);
+
+            sourceImage.ProcessPixelRows(accessor =>
+            {
+                for (int y = startY; y < endY; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (int x = startX; x < endX; x++)
+                    {
+                        var color = row[x];
+                        if (color.A == 0)
+                            continue;
+
+                        colors.Add(ColorHelper.GetPallete(color));
+                    }
+                }
+            });
+
+            if (colors.Count == 0)
+            {
+                return sourceImage;
+            }
+
+            var croppedPart = sourceImage.Clone();
+            croppedPart.Mutate(ctx => ctx.Crop(texturePartRect));
+
+            int size = texturePartRect.Width;
+            int centerX = (size - 1) / 2;
+            int centerY = (size - 1) / 2;
+
+            int maxGlobalIndex = size * 4;
+            int globalIndex = 0;
+            int sideIndex = 0;
+
+            foreach (var color in colors)
+            {
+                if (globalIndex >= maxGlobalIndex) break;
+
+                int edgeX = 0;
+                int edgeY = 0;
+
+                if (globalIndex < size)
+                {
+                    edgeX = 0;
+                    edgeY = sideIndex;
+                }
+                else if (globalIndex < size * 2)
+                {
+                    edgeX = sideIndex;
+                    edgeY = 0;
+                }
+                else if (globalIndex < size * 3)
+                {
+                    edgeX = size - 1;
+                    edgeY = (size - 1) - sideIndex;
+                }
+                else
+                {
+                    edgeX = (size - 1) - sideIndex;
+                    edgeY = size - 1;
+                }
+
+                var pixelColor = croppedPart[edgeX, edgeY];
+                if (pixelColor.A != 0)
+                {
+                    var mappedColor = ColorHelper.MapToPallete(pixelColor, color);
+
+                    int x = edgeX;
+                    int y = edgeY;
+                    int dx = Math.Abs(centerX - x);
+                    int dy = Math.Abs(centerY - y);
+                    int sx = x < centerX ? 1 : -1;
+                    int sy = y < centerY ? 1 : -1;
+                    int err = dx - dy;
+
+                    while (true)
+                    {
+                        croppedPart[x, y] = mappedColor;
+
+                        if (x == centerX && y == centerY) break;
+
+                        int e2 = 2 * err;
+                        if (e2 > -dy)
+                        {
+                            err -= dy;
+                            x += sx;
+                        }
+                        if (e2 < dx)
+                        {
+                            err += dx;
+                            y += sy;
+                        }
+                    }
+                }
+
+                sideIndex++;
+                globalIndex++;
+
+                if (sideIndex == size)
+                {
+                    sideIndex = 0;
+                }
+            }
+
+            sourceImage.Mutate(ctx => ctx.DrawImage(croppedPart, new Point(texturePartRect.X, texturePartRect.Y), 1f));
+            return sourceImage;
         }
     }
 }

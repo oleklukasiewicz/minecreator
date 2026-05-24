@@ -39,7 +39,7 @@
     {/if}
   </div>
   {#if label}
-    <span class="mc-font-simple">{label}</span>
+    <span style={" font-family: minecraft-simple"}>{label}</span>
   {/if}
 </div>
 

@@ -1,7 +1,9 @@
 ﻿using minecreator.api.Helpers;
 using minecreator.api.Model;
 using minecreator.api.Model.Interface;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.ColorSpaces.Conversion;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace minecreator.api.Services
 {
@@ -200,6 +202,11 @@ namespace minecreator.api.Services
                     }
                 }
             }
+            //remove duplicates
+            results = results
+                .GroupBy(x => x.Texture.ToBase64String(PngFormat.Instance))
+                .Select(g => g.First())
+                .ToList();
 
             return results;
         }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using minecreator.api.Model;
 using minecreator.api.Services;
 using SixLabors.ImageSharp;
@@ -52,9 +53,13 @@ namespace minecreator.api.Controllers
             {
                 foreach (var sample in item.Samples)
                 {
-                    var texture = sample.ToBase64();
+                    var result = sample;
+                    if (request.GameVersion == "beta")
+                    {
+                        result = _moduleService.GenerateFlatTexture(result);
+                    }
                     var stream = new MemoryStream();
-                    sample.Texture.SaveAsPng(stream);
+                    result.Texture.SaveAsPng(stream);
                     var image = stream.ToArray();
                     moduleTextures.Add(new GenerateResponse()
                     {
@@ -70,7 +75,12 @@ namespace minecreator.api.Controllers
             var setsTextures = new List<GenerateResponse>();
             foreach (var item in sets)
             {
-                var texture = item.Texture;
+                var result = item;
+                if (request.GameVersion == "beta")
+                {
+                    result = _moduleService.GenerateFlatTexture(result);
+                }
+                var texture = result.Texture;
                 var stream = new MemoryStream();
                 texture.SaveAsPng(stream);
                 var image = stream.ToArray();
@@ -93,6 +103,10 @@ namespace minecreator.api.Controllers
             {
                 item.Samples = 0;
                 var result = _moduleService.GenerateTexture(item);
+                if (request.GameVersion == "beta")
+                {
+                    result = _moduleService.GenerateFlatTexture(result);
+                }
                 var texture = result.ToBase64();
                 var stream = new MemoryStream();
                 result.Texture.SaveAsPng(stream);

@@ -76,6 +76,7 @@ namespace minecreator.api.Modules
                     }
                     var stripesPattern = PatternHelper.Stripes(patternSize, new Point(0, 0), stripespattern, stripes);
                     bodyPattern = stripesPattern;
+                    var color = ColorHelper.GetPallete(stripesPattern.Texture[0, 4]);
 
                     stripesPattern.Texture.ProcessPixelRows(accessor =>
                     {
@@ -86,7 +87,7 @@ namespace minecreator.api.Modules
                             {
                                 if (row[x].A == 0)
                                     continue;
-                                row[x] = ColorHelper.DEFAULT_PALLETE.BaseColor;
+                                row[x] = color.BaseColor;
                             }
                         }
                     });
@@ -149,7 +150,7 @@ namespace minecreator.api.Modules
                         rightarmPattern = PatternHelper.Flannel(patternSize, 1, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
                     }
                 }
-                else if (materialCharacteristic == 8)
+                else if (materialCharacteristic == 8) //vertical stripes
                 {
                     var stripes = ColorHelper.COLORS_PALLETE.Select(x => x.BaseColor)
                     .Take(Configuration.Colors.Count)
@@ -178,19 +179,10 @@ namespace minecreator.api.Modules
                     var stripesPattern = PatternHelper.VerticalStripes(patternSize, new Point(0, 0), stripespattern, stripes);
                     bodyPattern = stripesPattern;
 
-                    stripesPattern.Texture.ProcessPixelRows(accessor =>
-                    {
-                        for (int y = 0; y < 4; y++)
-                        {
-                            var row = accessor.GetRowSpan(y);
-                            for (int x = 0; x < row.Length; x++)
-                            {
-                                if (row[x].A == 0)
-                                    continue;
-                                row[x] = ColorHelper.DEFAULT_PALLETE.BaseColor;
-                            }
-                        }
-                    });
+                    Rectangle paletteRect = new Rectangle(0, 4, 12, 1);
+                    Rectangle targetRect = new Rectangle(4, 0, 4, 4);
+
+                    stripesPattern.Texture = TextureManupulationHelper.CenteredStripes(stripesPattern.Texture, paletteRect, targetRect);
 
                     leftarmPattern = stripesPattern;
                     rightarmPattern = stripesPattern;
