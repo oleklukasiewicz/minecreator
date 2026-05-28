@@ -369,7 +369,7 @@
         {:else}
           <div id="selected-preview">
             <span style="margin-bottom:12px;">
-              <h2 style="">
+              <h2 style="margin-bottom: 4px;">
                 {selectedRender?.config?.name || "Selected Render"}
               </h2>
               <Label
