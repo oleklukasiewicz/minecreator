@@ -13,11 +13,27 @@ const isMobileView: Writable<boolean> = writable(false);
 export const IS_MOBILE_VIEW: Readable<boolean> = readonly(isMobileView);
 
 export function Setup() {
-  const viewMatcher = window.matchMedia("(max-width: 480px)");
+  if (typeof window === "undefined") return;
+
+  const viewMatcher = window.matchMedia("(max-width: 760px)");
   isMobileView.set(viewMatcher.matches);
-  viewMatcher.addEventListener("change", (event) => {
-    isMobileView.set(event.matches);
-  });
+
+  const handler = (event: any) => {
+    const matches = event && typeof event.matches === "boolean" ? event.matches : viewMatcher.matches;
+    isMobileView.set(matches);
+  };
+
+  if (typeof (viewMatcher as any).addEventListener === "function") {
+    (viewMatcher as any).addEventListener("change", handler);
+  } else if (typeof (viewMatcher as any).addListener === "function") {
+    (viewMatcher as any).addListener(handler);
+  }
+
+  const resizeHandler = debounce(() => {
+    isMobileView.set(viewMatcher.matches);
+  }, 100);
+
+  window.addEventListener("resize", resizeHandler);
 }
 export const currentExport: Writable<ExportModel> = writable(
   new ExportModel("classic", "modern", []),

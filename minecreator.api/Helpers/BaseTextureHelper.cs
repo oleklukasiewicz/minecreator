@@ -10,19 +10,19 @@ namespace minecreator.api.Helpers
 {
     public static class BaseTextureHelper
     {
-        private static List<BaseTexture> baseTextures;
+        private static List<IBaseTexture> baseTextures;
 
         static BaseTextureHelper()
         {
-            var baseType = typeof(BaseTexture);
+            var baseType = typeof(IBaseTexture);
             var types = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => baseType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract && t != baseType);
+                .Where(t => baseType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
 
-            baseTextures = types.Select(t => (BaseTexture)Activator.CreateInstance(t)).ToList();
+            baseTextures = types.Select(t => (IBaseTexture)Activator.CreateInstance(t)).ToList();
         }
         public static TextureMap? LoadBaseTexture(OutfitStyle style, OutfitType type, OutfitModel model, int hash=1)
         {
-            BaseTexture baseTexture;
+            IBaseTexture baseTexture;
             var found = baseTextures.Where(bt => (bt.Styles.Contains(style) || bt.Styles.Count == 0) && bt.Type == type && (bt.Model == model || bt.Model == OutfitModel.BOTH)).ToList();
             if (found?.Count() > 0)
             {

@@ -2,8 +2,13 @@
 
 namespace minecreator.api.BaseTextures.Shoes.Casual
 {
-    public class ShoesCasualAltBaseTexture : BaseTexture
+    public class ShoesCasualAltBaseTexture : IBaseTexture
     {
+        public OutfitType Type { get; set; }
+        public List<OutfitStyle> Styles { get; set; } = new List<OutfitStyle>();
+        public OutfitModel Model { get; set; }
+        public string Texture { get; set; }
+
         public ShoesCasualAltBaseTexture()
         {
 

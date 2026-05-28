@@ -15,7 +15,12 @@
     "import": "Import",
     "newOutfit": "New outfit",
     "noOutfits": "No outfits",
-    "sets": "Sets"
+    "sets": "Sets",
+    "generatedOutfits": "Outfits"
+  },
+  "generatedPage": {
+    "exportCurrent": "Download",
+    "exportZip": "Download All"
   },
   "outfitListItem": {
     "unnamed": "Unnamed Outfit"

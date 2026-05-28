@@ -13,16 +13,21 @@
   background-color: var(--color-dialog);
 
   .dialog-content {
+    display: flex;
+    flex-direction: column;
     width: min(720px, calc(100% - 32px));
     max-height: min(84vh, 820px);
     border: 2px solid var(--color-theme-D2);
     background-color: var(--color-theme);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    box-sizing: border-box;
 
     .dialog-content-container {
+      flex: 1 1 auto;
       overflow: auto;
       margin: 8px;
       display: flex;
+      align-items: stretch;
       max-height: calc(84vh - 58px);
     }
 
@@ -65,10 +70,12 @@
       border-bottom: none;
       max-width: 100%;
       width: 100%;
-      max-height: min(90vh, 900px);
+      height: 100dvh;
+      max-height: 100dvh;
 
       .dialog-content-container {
-        max-height: calc(100vh - 58px);
+        max-height: none;
+        height: auto;
       }
     }
   }

@@ -2,7 +2,7 @@
 {
     public class GenerateResponse
     {
-        public OutfitConfiguration Config { get; set; }
+        public OutfitConfigurationModel Config { get; set; }
         public byte[] Image { get; set; }
     }
 }

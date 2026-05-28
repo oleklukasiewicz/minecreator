@@ -10,7 +10,6 @@
   import { ImportConfig, ImportConfigFromFile } from "$data/import";
   import { GAME_VERSION, Outfit, SKIN_MODEL } from "$data/outfit";
   import { ValueData } from "$src/helpers/dataHelper";
-  import { SUPPORTED_LOCALES, setAppLocale } from "$src/i18n";
   import { _, locale } from "svelte-i18n";
   import Button from "$lib/components/base/Button/Button.svelte";
   import SectionTitle from "$lib/components/base/SectionTitle/SectionTitle.svelte";
@@ -37,7 +36,7 @@
   import { goto } from "$app/navigation";
   import Checkbox from "$lib/components/base/Checkbox/Checkbox.svelte";
 
-  let currentLocale = $state<string>("en");
+ 
   let outfitDialogOpen = $state(false);
 
   let selectedOutfit = $state<Outfit | null>(null);
@@ -59,11 +58,7 @@
         new ValueData(item.value, $_(`options.skinModel.${item.value}`)),
     ),
   );
-  const languageOptions = $derived(
-    SUPPORTED_LOCALES.map(
-      (code) => new ValueData(code, $_(`options.language.${code}`)),
-    ),
-  );
+
   let configuration: Configuration = $state(new Configuration());
   //mount
   onMount(async () => {
@@ -196,19 +191,10 @@
     }
   };
 
-  const changeLocale = (payload: { item: ValueData }) => {
-    currentLocale = payload.item.value;
-    setAppLocale(payload.item.value);
-  };
-
   const generateOutfits = async function () {
     goto("/generated");
   };
 
-  $effect(() => {
-    const activeLocale = $locale ?? "en";
-    if (currentLocale !== activeLocale) currentLocale = activeLocale;
-  });
   currentVersion.subscribe((v) => {
     if (selectedOutfit) {
       queuePreviewGeneration(selectedOutfit);
@@ -222,18 +208,6 @@
 </script>
 
 <div id="container" class:mobile={$IS_MOBILE_VIEW}>
-  <div id="lang-select">
-    <div>
-      <Select
-        items={languageOptions}
-        selectedItem={currentLocale}
-        itemText="label"
-        itemValue="value"
-        placeholder={$_("common.select")}
-        onselect={changeLocale}
-      />
-    </div>
-  </div>
   <h1>{$_("page.title")}</h1>
   <div id="toolbox">
     <div class="option-select">

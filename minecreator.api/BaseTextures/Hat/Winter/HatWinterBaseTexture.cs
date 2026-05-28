@@ -2,8 +2,13 @@
 
 namespace minecreator.api.BaseTextures.Hat.Winter
 {
-    public class HatWinterBaseTexture:BaseTexture
+    public class HatWinterBaseTexture : IBaseTexture
     {
+        public OutfitType Type { get; set; }
+        public List<OutfitStyle> Styles { get; set; } = new List<OutfitStyle>();
+        public OutfitModel Model { get; set; }
+        public string Texture { get; set; }
+
         public HatWinterBaseTexture()
         {
             Model = OutfitModel.BOTH;

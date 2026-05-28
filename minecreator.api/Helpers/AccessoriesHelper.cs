@@ -14,21 +14,21 @@ namespace minecreator.api.Helpers
     }
     public static class AccessoriesHelper
     {
-        private static List<OutfitAccessoryItem> _accessories;
+        private static List<IOutfitAccessoryItem> _accessories;
 
         static AccessoriesHelper()
         {
-            var accessoryType = typeof(OutfitAccessoryItem);
+            var accessoryType = typeof(IOutfitAccessoryItem);
             var types = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => accessoryType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract && t != accessoryType);
 
-            _accessories = types.Select(t => (OutfitAccessoryItem)Activator.CreateInstance(t)).ToList();
+            _accessories = types.Select(t => (IOutfitAccessoryItem)Activator.CreateInstance(t)).ToList();
         }
-        public static List<OutfitAccessoryItem> GetAccessoriesForLocation(OutfitAccessoryLocation location, OutfitStyle style)
+        public static List<IOutfitAccessoryItem> GetAccessoriesForLocation(OutfitAccessoryLocation location, OutfitStyle style)
         {
             return _accessories.Where(a => a.Type == location.Type && a.Size.X <= location.Location.Width && a.Size.Y <= location.Location.Height && (a.Styles.Count() == 0 || a.Styles.Contains(style))).ToList();
         }
-        public static Image<Rgba32> LoadAccessory(OutfitAccessoryItem accessory, bool useOuterTexture = false)
+        public static Image<Rgba32> LoadAccessory(IOutfitAccessoryItem accessory, bool useOuterTexture = false)
         {
             var textureData = useOuterTexture && !string.IsNullOrEmpty(accessory.OuterTexture) ? accessory.OuterTexture : accessory.Texture;
             var imgBytes = Convert.FromBase64String(textureData);

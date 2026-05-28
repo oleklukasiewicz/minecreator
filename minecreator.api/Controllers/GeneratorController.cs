@@ -42,7 +42,7 @@ namespace minecreator.api.Controllers
                 var results = _moduleService.GenerateOutfits(item);
                 modulesResults.AddRange(results);
             }
-            var sets = new List<TextureMap>();
+            var sets = new List<ModuleOutfitsResult>();
             if (request.GenerateSets)
             {
                 sets = _moduleService.GenerateSets(modulesResults);
@@ -51,6 +51,7 @@ namespace minecreator.api.Controllers
             var moduleTextures = new List<GenerateResponse>();
             foreach (var item in modulesResults)
             {
+                var sampleIndex = 0;
                 foreach (var sample in item.Samples)
                 {
                     var result = sample;
@@ -63,13 +64,16 @@ namespace minecreator.api.Controllers
                     var image = stream.ToArray();
                     moduleTextures.Add(new GenerateResponse()
                     {
-                        Config = new OutfitConfiguration()
+                        Config = new OutfitConfigurationModel()
                         {
                             Id = item.OutfitId,
-                            Type = item.Type
+                            Type = item.Type.ToString(),
+                            Name = item.Configuration.Name,
+                            Samples = sampleIndex
                         },
                         Image = image
                     });
+                    sampleIndex++;
                 }
             }
             var setsTextures = new List<GenerateResponse>();
@@ -78,14 +82,20 @@ namespace minecreator.api.Controllers
                 var result = item;
                 if (request.GameVersion == "beta")
                 {
-                    result = _moduleService.GenerateFlatTexture(result);
+                    result.Texture = _moduleService.GenerateFlatTexture(result.Texture);
                 }
-                var texture = result.Texture;
+                var texture = result.Texture.Texture;
                 var stream = new MemoryStream();
                 texture.SaveAsPng(stream);
                 var image = stream.ToArray();
                 setsTextures.Add(new GenerateResponse()
                 {
+                    Config = new OutfitConfigurationModel()
+                    {
+                        Id = item.OutfitId,
+                        Type = item.Type.ToString(),
+                        Name = item.Configuration.Name,
+                    },
                     Image = image
                 });
             }
@@ -113,7 +123,6 @@ namespace minecreator.api.Controllers
                 image = stream.ToArray();
                 response.Add(new GenerateResponse()
                 {
-                    Config = item,
                     Image = image
                 });
             }

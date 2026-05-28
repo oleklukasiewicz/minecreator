@@ -14,7 +14,7 @@ namespace minecreator.api.Services
         void RegisterModule(OutfitType type, IOutfitModule module);
         TextureMap GenerateTexture(OutfitConfiguration config);
         public ModuleOutfitsResult GenerateOutfits(OutfitConfiguration config);
-        public List<TextureMap> GenerateSets(List<ModuleOutfitsResult> outfits);
+        public List<ModuleOutfitsResult> GenerateSets(List<ModuleOutfitsResult> outfits);
         public TextureMap GenerateFlatTexture(TextureMap textureMap);
     }
 
@@ -74,6 +74,7 @@ namespace minecreator.api.Services
             if (samples <= 0) samples = 1;
 
             var result = new ModuleOutfitsResult();
+            result.Configuration = config;
             result.OutfitId = config.Id;
             result.Type = config.Type;
 
@@ -112,10 +113,10 @@ namespace minecreator.api.Services
 
             return texture;
         }
-        public List<TextureMap> GenerateSets(List<ModuleOutfitsResult> outfits)
+        public List<ModuleOutfitsResult> GenerateSets(List<ModuleOutfitsResult> outfits)
         {
             OutfitType primaryOutfitType;
-            var results = new List<TextureMap>();
+            var results = new List<ModuleOutfitsResult>();
             var typeOrderForPicking = new List<OutfitType>
     {
         OutfitType.TOP,
@@ -184,7 +185,14 @@ namespace minecreator.api.Services
                         {
                             currentTexture = TextureManupulationHelper.Merge(currentTexture, item.texture);
                         }
-                        results.Add(new TextureMap { Texture = currentTexture });
+                        results.Add(new ModuleOutfitsResult
+                        {
+                            OutfitId = primary.OutfitId,
+                            Type = primary.Type,
+                            Configuration = primary.Configuration,
+                            Samples = primary.Samples,
+                            Texture = new TextureMap { Texture = currentTexture }
+                        });
                     }
 
                     var orderedComplementary = mostComplementaryColorsPerType
@@ -198,13 +206,20 @@ namespace minecreator.api.Services
                         {
                             currentTexture = TextureManupulationHelper.Merge(currentTexture, item.texture);
                         }
-                        results.Add(new TextureMap { Texture = currentTexture });
+                        results.Add(new ModuleOutfitsResult
+                        {
+                            OutfitId = primary.OutfitId,
+                            Type = primary.Type,
+                            Configuration = primary.Configuration,
+                            Samples = primary.Samples,
+                            Texture = new TextureMap { Texture = currentTexture }
+                        });
                     }
                 }
             }
             //remove duplicates
             results = results
-                .GroupBy(x => x.Texture.ToBase64String(PngFormat.Instance))
+                .GroupBy(x => x.Texture.Texture.ToBase64String(PngFormat.Instance))
                 .Select(g => g.First())
                 .ToList();
 

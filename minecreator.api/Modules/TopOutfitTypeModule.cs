@@ -46,6 +46,7 @@ namespace minecreator.api.Modules
                         leftarmPattern = PatternHelper.Flannel(patternSize, 2, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
                         rightarmPattern = PatternHelper.Flannel(patternSize, 2, new Point(1, 1), ColorHelper.DEFAULT_PALLETE.Colors);
                     }
+                    
                 }
                 else if (materialCharacteristic == 2) // stripes
                 {
@@ -104,6 +105,7 @@ namespace minecreator.api.Modules
                     bodyPattern = hawaiiPattern;
                     leftarmPattern = hawaiiPattern;
                     rightarmPattern = hawaiiPattern;
+                    var texture = bodyPattern.Texture.ToBase64String(PngFormat.Instance);
                 }
                 else if (materialCharacteristic == 4) //knit
                 {

@@ -459,18 +459,28 @@
 
 <style lang="scss">
   .outfit-render {
-    aspect-ratio: 1;
     width: 100%;
     height: 100%;
-    display: flex;
+    aspect-ratio: 1;
+    position: relative;
+    overflow: hidden;
+    contain: layout size paint;
+
     div {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
     }
+
     img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       opacity: 0;
+      object-fit: contain;
+
       &.renderReady {
         opacity: 1;
       }

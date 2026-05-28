@@ -2,15 +2,20 @@
 
 namespace minecreator.api.Accessories
 {
-    public class BaseButtonsAccessory : OutfitAccessoryItem
+    public class BaseButtonsAccessory : IOutfitAccessoryItem
     {
+        public OutfitAccessory Type { get; set; } = OutfitAccessory.BUTTONS;
+        public string Texture { get; set; }
+        public string OuterTexture { get; set; }
+        public System.Drawing.Point Size { get; set; } = new System.Drawing.Point(1, 1);
+        public bool IsReadyForColor { get; set; } = false;
+        public bool UseBaseColor { get; set; }
+        public bool IsForGeneration { get; set; } = true;
+        public bool IsForOuterLayer { get; set; } = true;
+        public List<OutfitStyle> Styles { get; set; } = new List<OutfitStyle>();
+
         public BaseButtonsAccessory()
         {
-            Type = OutfitAccessory.BUTTONS;
-            IsReadyForColor = false;
-            Size = new System.Drawing.Point(1, 1);
-            IsForGeneration = true;
-            IsForOuterLayer = true;
         }
     }
 }

@@ -2,8 +2,13 @@
 
 namespace minecreator.api.Bases.Top.Casual
 {
-    public class SlimTopCasualBaseTexture : BaseTexture
+    public class SlimTopCasualBaseTexture : IBaseTexture
     {
+        public OutfitType Type { get; set; }
+        public List<OutfitStyle> Styles { get; set; } = new List<OutfitStyle>();
+        public OutfitModel Model { get; set; }
+        public string Texture { get; set; }
+
         public SlimTopCasualBaseTexture()
         {
             Model = OutfitModel.SLIM;

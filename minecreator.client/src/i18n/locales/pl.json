@@ -15,7 +15,12 @@
     "import": "Import",
     "newOutfit": "Nowe ubranie",
     "noOutfits": "Brak ubrań",
-    "sets": "Zestawy"
+    "sets": "Zestawy",
+    "generatedOutfits": "Ubrania"
+  },
+  "generatedPage": {
+    "exportCurrent": "Pobierz",
+    "exportZip": "Pobierz wszystko"
   },
   "outfitListItem": {
     "unnamed": "Nienazwane ubranie"
